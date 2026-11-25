@@ -1,0 +1,26 @@
+============================= test session starts =============================
+platform win32 -- Python 3.10.6, pytest-9.2.0, pluggy-1.7.0 -- C:\Projects\Intelligent-Emergency-Response\backend\venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Projects\Intelligent-Emergency-Response\backend
+plugins: anyio-4.16.0, asyncio-1.5.0
+asyncio: mode=strict, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 10 items
+
+tests/test_core.py::test_gis_network_loaded PASSED                       [ 10%]
+tests/test_core.py::test_constrained_routing_underpass_height_rejection PASSED [ 20%]
+tests/test_core.py::test_constrained_routing_narrow_alley PASSED         [ 30%]
+tests/test_core.py::test_traffic_emergency_corridor_relief PASSED        [ 40%]
+tests/test_core.py::test_dispatch_concurrency_lock PASSED                [ 50%]
+tests/test_end_to_end_workflow.py::test_complete_7_stage_workflow_and_complaints PASSED [ 60%]
+tests/test_end_to_end_workflow.py::test_no_openstreetmap_basemap_in_frontend PASSED [ 70%]
+tests/test_multi_stakeholder_and_csv.py::test_four_stakeholder_roles_and_rbac PASSED [ 80%]
+tests/test_multi_stakeholder_and_csv.py::test_hospital_csv_bulk_import_validation_and_security PASSED [ 90%]
+tests/test_multi_stakeholder_and_csv.py::test_bbox_zoom_dependent_gis_roads PASSED [100%]
+
+============================== warnings summary ===============================
+app\core\config.py:19
+  C:\Projects\Intelligent-Emergency-Response\backend\app\core\config.py:19: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.14/migration/
+    class Settings(BaseSettings):
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 10 passed, 1 warning in 11.02s ========================

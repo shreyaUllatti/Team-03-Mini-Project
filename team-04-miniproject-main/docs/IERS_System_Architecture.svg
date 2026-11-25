@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 500" width="1200" height="500" font-family="Inter, Segoe UI, Arial, sans-serif">
+  <defs>
+    <linearGradient id="g-blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="g-purple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="g-cyan" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0EA5E9"/>
+      <stop offset="100%" stop-color="#0369A1"/>
+    </linearGradient>
+    <linearGradient id="g-green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <style>
+      .h1 { font-size: 17px; font-weight: 800; fill: #0F172A; letter-spacing: 0.4px; }
+      .sub { font-size: 12.5px; fill: #64748B; }
+      .tier-title { font-size: 14px; font-weight: 700; fill: #FFFFFF; text-anchor: middle; }
+      .card-t { font-size: 13px; font-weight: 700; fill: #1E3A8A; text-anchor: middle; }
+      .card-t-p { font-size: 13px; font-weight: 700; fill: #3730A3; text-anchor: middle; }
+      .card-t-c { font-size: 13px; font-weight: 700; fill: #075985; text-anchor: middle; }
+      .card-t-g { font-size: 13px; font-weight: 700; fill: #065F46; text-anchor: middle; }
+      .card-s { font-size: 11px; fill: #3B82F6; text-anchor: middle; }
+      .card-s-p { font-size: 11px; fill: #6366F1; text-anchor: middle; }
+      .card-s-c { font-size: 11px; fill: #0284C7; text-anchor: middle; }
+      .card-s-g { font-size: 11px; fill: #059669; text-anchor: middle; }
+      .proto { font-size: 10.5px; font-weight: 600; fill: #475569; text-anchor: middle; }
+      .fig { font-size: 14px; font-weight: 600; fill: #1E293B; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <!-- Canvas -->
+  <rect width="1200" height="500" fill="#FFFFFF"/>
+  <rect x="20" y="16" width="1160" height="432" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <text x="48" y="50" class="h1">HIGH-LEVEL SYSTEM &amp; COMPONENT ARCHITECTURE — IERS</text>
+  <text x="48" y="70" class="sub">Tiered Spatial Dispatch, Constraint-Based Route Optimisation &amp; Real-Time Telemetry Flow</text>
+
+  <!-- ==================== TIER 1: PRESENTATION TIER ==================== -->
+  <g transform="translate(48, 96)">
+    <rect width="242" height="328" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <path d="M 0 14 Q 0 0 14 0 L 228 0 Q 242 0 242 14 L 242 46 L 0 46 Z" fill="url(#g-blue)"/>
+    <text x="121" y="28" class="tier-title">1. Presentation Tier</text>
+
+    <rect x="16" y="62" width="210" height="54" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.2"/>
+    <text x="121" y="84" class="card-t">Dispatcher Command Center</text>
+    <text x="121" y="102" class="card-s">Live PyQGIS Map, Fleet &amp; Sim</text>
+
+    <rect x="16" y="128" width="210" height="54" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.2"/>
+    <text x="121" y="150" class="card-t">Citizen Portal</text>
+    <text x="121" y="168" class="card-s">GPS Report &amp; Live Tracking</text>
+
+    <rect x="16" y="194" width="210" height="54" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.2"/>
+    <text x="121" y="216" class="card-t">Ambulance Operator Portal</text>
+    <text x="121" y="234" class="card-s">Two-Leg 60fps Navigation</text>
+
+    <rect x="16" y="260" width="210" height="54" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.2"/>
+    <text x="121" y="282" class="card-t">Hospital Staff Portal</text>
+    <text x="121" y="300" class="card-s">ICU Capacity, ETA &amp; Bulk CSV</text>
+  </g>
+
+  <!-- Arrow 1 -> 2 -->
+  <line x1="292" y1="260" x2="332" y2="260" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="312" y="250" class="proto">HTTP/WS</text>
+
+  <!-- ==================== TIER 2: API GATEWAY ==================== -->
+  <g transform="translate(338, 96)">
+    <rect width="236" height="328" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <path d="M 0 14 Q 0 0 14 0 L 222 0 Q 236 0 236 14 L 236 46 L 0 46 Z" fill="url(#g-purple)"/>
+    <text x="118" y="28" class="tier-title">2. API Gateway (FastAPI)</text>
+
+    <rect x="16" y="64" width="204" height="70" rx="10" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.2"/>
+    <text x="118" y="92" class="card-t-p">REST &amp; GIS Controllers</text>
+    <text x="118" y="112" class="card-s-p">Incidents, Routing &amp; Tile Proxy</text>
+
+    <rect x="16" y="150" width="204" height="70" rx="10" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.2"/>
+    <text x="118" y="178" class="card-t-p">Auth &amp; RBAC Guard</text>
+    <text x="118" y="198" class="card-s-p">JWT HS256 + PBKDF2-SHA256</text>
+
+    <rect x="16" y="236" width="204" height="70" rx="10" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.2"/>
+    <text x="118" y="264" class="card-t-p">WebSocket Hub (/ws)</text>
+    <text x="118" y="284" class="card-s-p">Real-Time GPS &amp; Event Push</text>
+  </g>
+
+  <!-- Arrow 2 -> 3 -->
+  <line x1="576" y1="260" x2="616" y2="260" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="596" y="250" class="proto">Async</text>
+
+  <!-- ==================== TIER 3: ENGINE TIER ==================== -->
+  <g transform="translate(622, 96)">
+    <rect width="248" height="328" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <path d="M 0 14 Q 0 0 14 0 L 234 0 Q 248 0 248 14 L 248 46 L 0 46 Z" fill="url(#g-cyan)"/>
+    <text x="124" y="28" class="tier-title">3. Engine Tier</text>
+
+    <rect x="16" y="62" width="216" height="54" rx="10" fill="#F0F9FF" stroke="#BAE6FD" stroke-width="1.2"/>
+    <text x="124" y="84" class="card-t-c">Spatial Routing Engine (E1)</text>
+    <text x="124" y="102" class="card-s-c">pgRouting A* / Dijkstra + Constraints</text>
+
+    <rect x="16" y="128" width="216" height="54" rx="10" fill="#F0F9FF" stroke="#BAE6FD" stroke-width="1.2"/>
+    <text x="124" y="150" class="card-t-c">Auto-Dispatch Engine (E2)</text>
+    <text x="124" y="168" class="card-s-c">KNN Ranking, Locking &amp; Hospital Fit</text>
+
+    <rect x="16" y="194" width="216" height="54" rx="10" fill="#F0F9FF" stroke="#BAE6FD" stroke-width="1.2"/>
+    <text x="124" y="216" class="card-t-c">Live Mission Simulator (E3)</text>
+    <text x="124" y="234" class="card-s-c">11-State Lifecycle &amp; Telemetry</text>
+
+    <rect x="16" y="260" width="216" height="54" rx="10" fill="#F0F9FF" stroke="#BAE6FD" stroke-width="1.2"/>
+    <text x="124" y="282" class="card-t-c">Native PyQGIS Renderer (E4)</text>
+    <text x="124" y="300" class="card-s-c">Headless EPSG:3857 XYZ Tiles</text>
+  </g>
+
+  <!-- Arrow 3 -> 4 -->
+  <line x1="872" y1="260" x2="912" y2="260" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="892" y="250" class="proto">SQL/GiST</text>
+
+  <!-- ==================== TIER 4: PERSISTENCE TIER ==================== -->
+  <g transform="translate(918, 96)">
+    <rect width="236" height="328" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <path d="M 0 14 Q 0 0 14 0 L 222 0 Q 236 0 236 14 L 236 46 L 0 46 Z" fill="url(#g-green)"/>
+    <text x="118" y="28" class="tier-title">4. Persistence Tier</text>
+
+    <rect x="16" y="64" width="204" height="70" rx="10" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1.2"/>
+    <text x="118" y="92" class="card-t-g">Spatial Database</text>
+    <text x="118" y="112" class="card-s-g">PostgreSQL 18 + PostGIS 3.6</text>
+
+    <rect x="16" y="150" width="204" height="70" rx="10" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1.2"/>
+    <text x="118" y="178" class="card-t-g">Road Graph &amp; Tile Cache</text>
+    <text x="118" y="198" class="card-s-g">27,775 Edges · 20,049 Nodes</text>
+
+    <rect x="16" y="236" width="204" height="70" rx="10" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1.2"/>
+    <text x="118" y="264" class="card-t-g">Immutable Audit Logs</text>
+    <text x="118" y="284" class="card-s-g">Events, Routes &amp; GPS History</text>
+  </g>
+
+  <!-- Figure Caption -->
+  <text x="600" y="478" class="fig">Fig 1. High-Level System Architecture &amp; Component Interaction — IERS (Hubballi)</text>
+</svg>

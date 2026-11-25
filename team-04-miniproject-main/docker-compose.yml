@@ -1,0 +1,31 @@
+version: "3.9"
+
+# ============================================================
+# Intelligent Emergency Response System (IERS)
+# Independent Docker Compose — completely separate from GeoPilot
+# Project: team-04-miniproject
+# ============================================================
+
+services:
+  iers-postgis:
+    image: pgrouting/pgrouting:17-3.5-3.7.3
+    container_name: iers-postgis
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: iers_db
+      POSTGRES_USER: iers_user
+      POSTGRES_PASSWORD: iers_dev_local
+    ports:
+      - "5434:5432"      # Host 5434 → avoids clash with local PG18 (5432) and GeoPilot (5433)
+    volumes:
+      - iers_postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iers_user -d iers_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  iers_postgis_data:
+    driver: local
+    name: iers_postgis_data   # Explicitly named, independent of GeoPilot's geopilot_geopilot_data

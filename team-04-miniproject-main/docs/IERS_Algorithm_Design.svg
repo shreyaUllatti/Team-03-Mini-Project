@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 640" width="1160" height="640" font-family="Inter, Segoe UI, Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    </marker>
+    <style>
+      .h1 { font-size: 18px; font-weight: 800; fill: #0F172A; }
+      .sub { font-size: 12.5px; fill: #64748B; }
+      .box { fill: #FFFFFF; stroke: #CBD5E1; stroke-width: 1.6; }
+      .box-blue { fill: #EFF6FF; stroke: #2563EB; stroke-width: 1.8; }
+      .box-purple { fill: #F5F3FF; stroke: #7C3AED; stroke-width: 1.8; }
+      .box-green { fill: #ECFDF5; stroke: #059669; stroke-width: 1.8; }
+      .box-amber { fill: #FFFBEB; stroke: #D97706; stroke-width: 1.8; }
+      .b-title { font-size: 13.5px; font-weight: 700; fill: #0F172A; text-anchor: middle; }
+      .b-text { font-size: 11.5px; fill: #334155; text-anchor: middle; }
+      .b-mono { font-size: 11px; font-family: Consolas, monospace; fill: #1E3A8A; text-anchor: middle; }
+      .line { stroke: #334155; stroke-width: 1.8; fill: none; marker-end: url(#arr); }
+      .lbl { font-size: 11px; font-weight: 600; fill: #475569; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="1160" height="640" fill="#FFFFFF"/>
+  <rect x="18" y="16" width="1124" height="606" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+
+  <!-- Header -->
+  <text x="48" y="50" class="h1">ALGORITHM DESIGN — CONSTRAINT-BASED SPATIAL ROUTING &amp; DISPATCH</text>
+  <text x="48" y="70" class="sub">PostGIS KNN Snapping · Dynamic Cost Function · pgRouting A* / Dijkstra · Multi-Criteria Scoring</text>
+
+  <!-- Step 1: Input -->
+  <rect x="48" y="102" width="240" height="86" rx="10" class="box-blue"/>
+  <text x="168" y="128" class="b-title">1. Spatial Input &amp; KNN Snap</text>
+  <text x="168" y="148" class="b-text">Emergency (lat, lon, severity)</text>
+  <text x="168" y="168" class="b-mono">ORDER BY location &lt;-&gt; pt LIMIT 1</text>
+
+  <!-- Arrow 1 -> 2 -->
+  <line x1="288" y1="145" x2="340" y2="145" class="line"/>
+
+  <!-- Step 2: Candidate Pruning -->
+  <rect x="346" y="102" width="270" height="86" rx="10" class="box-blue"/>
+  <text x="481" y="128" class="b-title">2. GiST Candidate Pruning</text>
+  <text x="481" y="148" class="b-text">Fetch Top-3 AVAILABLE Ambulances</text>
+  <text x="481" y="168" class="b-text">&amp; Top-4 Hospitals via R-Tree Index</text>
+
+  <!-- Arrow 2 -> 3 -->
+  <line x1="616" y1="145" x2="668" y2="145" class="line"/>
+
+  <!-- Step 3: Dynamic Constraint Filter -->
+  <rect x="674" y="94" width="438" height="104" rx="10" class="box-amber"/>
+  <text x="893" y="118" class="b-title">3. Dynamic Constraint-Based Edge SQL</text>
+  <text x="893" y="138" class="b-text">Exclude: is_blocked = TRUE, max_height_m &lt; vh, max_width_m &lt; vw</text>
+  <text x="893" y="156" class="b-mono">cost = base_time * traffic_mult * (0.6 if corridor else 1.0)</text>
+  <text x="893" y="174" class="b-text">One-Way: Normal = -1 | Ambulance = Urban Contraflow Penalty</text>
+
+  <!-- Arrow 3 -> 4 (down) -->
+  <line x1="893" y1="198" x2="893" y2="246" class="line"/>
+
+  <!-- Step 4: pgRouting Search -->
+  <rect x="674" y="252" width="438" height="110" rx="10" class="box-purple"/>
+  <text x="893" y="278" class="b-title">4. Shortest-Path Graph Search (pgRouting 4.0)</text>
+  <text x="893" y="300" class="b-mono">pgr_astar: f(n) = g(n) + h(n)  |  pgr_dijkstra: O((V+E) log V)</text>
+  <text x="893" y="320" class="b-text">Evaluates 27,775 directed edges &amp; 20,049 giant-component nodes</text>
+  <text x="893" y="340" class="b-text">Returns ordered road coordinates, ETA (s), distance (m), &amp; street names</text>
+
+  <!-- Arrow 4 -> 5 (left) -->
+  <line x1="674" y1="307" x2="622" y2="307" class="line"/>
+
+  <!-- Step 5: Multi-Criteria Scoring -->
+  <rect x="346" y="252" width="270" height="110" rx="10" class="box-green"/>
+  <text x="481" y="278" class="b-title">5. Multi-Criteria Ranking</text>
+  <text x="481" y="298" class="b-text">Ambulance Score = Network ETA</text>
+  <text x="481" y="316" class="b-text">- 30s bonus (ALS/TRAUMA for P1)</text>
+  <text x="481" y="336" class="b-text">Hospital Score = ETA + ICU Penalty</text>
+  <text x="481" y="352" class="b-text">- 25s bonus (Trauma Level 1/2)</text>
+
+  <!-- Arrow 5 -> 6 (left) -->
+  <line x1="346" y1="307" x2="294" y2="307" class="line"/>
+
+  <!-- Step 6: Atomic Lock -->
+  <rect x="48" y="252" width="240" height="110" rx="10" class="box-green"/>
+  <text x="168" y="278" class="b-title">6. Atomic Reservation</text>
+  <text x="168" y="300" class="b-mono">SELECT status ... FOR UPDATE</text>
+  <text x="168" y="320" class="b-text">Prevents double-dispatch race</text>
+  <text x="168" y="340" class="b-text">Commits dispatch + route_history</text>
+
+  <!-- Arrow 6 -> 7 (down) -->
+  <line x1="168" y1="362" x2="168" y2="416" class="line"/>
+
+  <!-- Step 7: Two-Leg Execution -->
+  <rect x="48" y="422" width="1064" height="168" rx="12" class="box"/>
+  <text x="580" y="450" class="b-title">7. Continuous Two-Leg Execution &amp; 60fps Interpolation Loop</text>
+
+  <rect x="76" y="470" width="290" height="96" rx="10" class="box-blue"/>
+  <text x="221" y="494" class="b-title">Leg 1: Ambulance -&gt; Scene</text>
+  <text x="221" y="514" class="b-text">Step along pgRouting coordinates</text>
+  <text x="221" y="532" class="b-text">Broadcast WS AMBULANCE_LOCATION</text>
+  <text x="221" y="550" class="b-text">Periodic DB write (every 3rd step)</text>
+
+  <line x1="366" y1="518" x2="424" y2="518" class="line"/>
+
+  <rect x="430" y="470" width="296" height="96" rx="10" class="box-amber"/>
+  <text x="578" y="494" class="b-title">Pickup &amp; Leg 2 Re-Routing</text>
+  <text x="578" y="514" class="b-text">ARRIVED -&gt; PICKUP -&gt; ONBOARD</text>
+  <text x="578" y="532" class="b-text">Compute NEW pgRouting A* Leg 2</text>
+  <text x="578" y="550" class="b-text">(Emergency -&gt; Selected Hospital)</text>
+
+  <line x1="726" y1="518" x2="784" y2="518" class="line"/>
+
+  <rect x="790" y="470" width="296" height="96" rx="10" class="box-green"/>
+  <text x="938" y="494" class="b-title">Handover &amp; Fleet Release</text>
+  <text x="938" y="514" class="b-text">ARRIVED_AT_HOSPITAL -&gt; HANDOVER</text>
+  <text x="938" y="532" class="b-text">Mark COMPLETED + Log Audit</text>
+  <text x="938" y="550" class="b-text">Release Ambulance -&gt; AVAILABLE</text>
+</svg>

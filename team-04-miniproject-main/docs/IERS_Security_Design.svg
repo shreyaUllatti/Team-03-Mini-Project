@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1160 540" width="1160" height="540" font-family="Inter, Segoe UI, Arial, sans-serif">
+  <defs>
+    <linearGradient id="sg-dark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="sg-blue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="sg-amber" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#D97706"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+    <linearGradient id="sg-green" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#475569"/>
+    </marker>
+    <style>
+      .h1 { font-size: 18px; font-weight: 800; fill: #0F172A; }
+      .sub { font-size: 12.5px; fill: #64748B; }
+      .tier-t { font-size: 13.5px; font-weight: 700; fill: #FFFFFF; text-anchor: middle; }
+      .ct { font-size: 12.5px; font-weight: 700; fill: #0F172A; text-anchor: middle; }
+      .cs { font-size: 11px; fill: #475569; text-anchor: middle; }
+      .fig { font-size: 13.5px; font-weight: 600; fill: #1E293B; text-anchor: middle; }
+    </style>
+  </defs>
+
+  <rect width="1160" height="540" fill="#FFFFFF"/>
+  <rect x="18" y="16" width="1124" height="472" rx="14" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+
+  <text x="46" y="50" class="h1">SECURITY DESIGN — DEFENSE-IN-DEPTH &amp; ACCESS CONTROL ARCHITECTURE (IERS)</text>
+  <text x="46" y="70" class="sub">Authentication · 4-Role RBAC · Input &amp; CSV Sanitization · Parameterized SQL · Atomic Locking · Immutable Audit</text>
+
+  <!-- Layer 1: Identity & Auth -->
+  <g transform="translate(46, 98)">
+    <rect width="244" height="356" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <path d="M 0 14 Q 0 0 14 0 L 230 0 Q 244 0 244 14 L 244 46 L 0 46 Z" fill="url(#sg-dark)"/>
+    <text x="122" y="28" class="tier-t">1. Identity &amp; Auth</text>
+
+    <rect x="16" y="64" width="212" height="76" rx="10" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="122" y="92" class="ct">PBKDF2-SHA256 Hashing</text>
+    <text x="122" y="112" class="cs">120,000 iterations + per-user salt</text>
+    <text x="122" y="128" class="cs">Zero plaintext passwords stored</text>
+
+    <rect x="16" y="156" width="212" height="76" rx="10" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="122" y="184" class="ct">Stateless JWT (HS256)</text>
+    <text x="122" y="204" class="cs">Signed Bearer tokens with expiry</text>
+    <text x="122" y="220" class="cs">Carries user_id, role &amp; entity_id</text>
+
+    <rect x="16" y="248" width="212" height="86" rx="10" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+    <text x="122" y="276" class="ct">Active Account Enforcement</text>
+    <text x="122" y="296" class="cs">is_active = TRUE check on login</text>
+    <text x="122" y="314" class="cs">Dispatcher-only user provisioning</text>
+  </g>
+
+  <line x1="292" y1="276" x2="328" y2="276" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+
+  <!-- Layer 2: RBAC & Entity Scoping -->
+  <g transform="translate(334, 98)">
+    <rect width="244" height="356" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <path d="M 0 14 Q 0 0 14 0 L 230 0 Q 244 0 244 14 L 244 46 L 0 46 Z" fill="url(#sg-blue)"/>
+    <text x="122" y="28" class="tier-t">2. RBAC &amp; Isolation</text>
+
+    <rect x="16" y="64" width="212" height="76" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.2"/>
+    <text x="122" y="92" class="ct">4-Role Access Matrix</text>
+    <text x="122" y="112" class="cs">CITIZEN · DISPATCHER</text>
+    <text x="122" y="128" class="cs">HOSPITAL_STAFF · OPERATOR</text>
+
+    <rect x="16" y="156" width="212" height="76" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.2"/>
+    <text x="122" y="184" class="ct">require_roles() Guards</text>
+    <text x="122" y="204" class="cs">HTTP 401/403 on unauthorized</text>
+    <text x="122" y="220" class="cs">FastAPI dependency injection</text>
+
+    <rect x="16" y="248" width="212" height="86" rx="10" fill="#EFF6FF" stroke="#BFDBFE" stroke-width="1.2"/>
+    <text x="122" y="276" class="ct">Entity-Level Scoping</text>
+    <text x="122" y="296" class="cs">Citizens see only own reports</text>
+    <text x="122" y="314" class="cs">Hospital/Crew locked to entity_id</text>
+  </g>
+
+  <line x1="580" y1="276" x2="616" y2="276" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+
+  <!-- Layer 3: Input & Data Protection -->
+  <g transform="translate(622, 98)">
+    <rect width="244" height="356" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <path d="M 0 14 Q 0 0 14 0 L 230 0 Q 244 0 244 14 L 244 46 L 0 46 Z" fill="url(#sg-amber)"/>
+    <text x="122" y="28" class="tier-t">3. Input &amp; Query Safety</text>
+
+    <rect x="16" y="64" width="212" height="76" rx="10" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.2"/>
+    <text x="122" y="92" class="ct">Parameterized SQL</text>
+    <text x="122" y="112" class="cs">SQLAlchemy bind params (:param)</text>
+    <text x="122" y="128" class="cs">Prevents SQL Injection attacks</text>
+
+    <rect x="16" y="156" width="212" height="76" rx="10" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.2"/>
+    <text x="122" y="184" class="ct">CSV Formula Sanitization</text>
+    <text x="122" y="204" class="cs">Strips =, +, -, @ cell prefixes</text>
+    <text x="122" y="220" class="cs">Blocks cross-hospital hospital_id</text>
+
+    <rect x="16" y="248" width="212" height="86" rx="10" fill="#FFFBEB" stroke="#FDE68A" stroke-width="1.2"/>
+    <text x="122" y="276" class="ct">Environment Secrets</text>
+    <text x="122" y="296" class="cs">DB credentials &amp; JWT key in .env</text>
+    <text x="122" y="314" class="cs">.gitignore prevents secret leaks</text>
+  </g>
+
+  <line x1="868" y1="276" x2="904" y2="276" stroke="#475569" stroke-width="1.8" marker-end="url(#arr)"/>
+
+  <!-- Layer 4: Integrity & Auditability -->
+  <g transform="translate(910, 98)">
+    <rect width="208" height="356" rx="14" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+    <path d="M 0 14 Q 0 0 14 0 L 194 0 Q 208 0 208 14 L 208 46 L 0 46 Z" fill="url(#sg-green)"/>
+    <text x="104" y="28" class="tier-t">4. Integrity &amp; Audit</text>
+
+    <rect x="14" y="64" width="180" height="76" rx="10" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1.2"/>
+    <text x="104" y="92" class="ct">ACID Row Locking</text>
+    <text x="104" y="112" class="cs">SELECT ... FOR UPDATE</text>
+    <text x="104" y="128" class="cs">Zero double-dispatch</text>
+
+    <rect x="14" y="156" width="180" height="76" rx="10" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1.2"/>
+    <text x="104" y="184" class="ct">State Machine Guards</text>
+    <text x="104" y="204" class="cs">Blocks premature complete</text>
+    <text x="104" y="220" class="cs">Enforces handover order</text>
+
+    <rect x="14" y="248" width="180" height="86" rx="10" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1.2"/>
+    <text x="104" y="276" class="ct">Immutable Audit Logs</text>
+    <text x="104" y="296" class="cs">emergency_events</text>
+    <text x="104" y="314" class="cs">hospital_csv_imports</text>
+  </g>
+
+  <text x="580" y="518" class="fig">Fig 3. Defense-in-Depth Security Architecture &amp; Controls — IERS</text>
+</svg>

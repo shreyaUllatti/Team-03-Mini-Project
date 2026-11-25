@@ -1,0 +1,2313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IERS — Intelligent Emergency Response System</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Three.js for 3D Ambulance Inspection -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* IERS Typography Scale + 20 Practical Design Tips */
+    body { font-size: 16px; font-weight: 400; line-height: 1.6; font-variant-numeric: tabular-nums; }
+    h1 { font-size: 56px; font-weight: 700; line-height: 1.08; letter-spacing: -0.028em; }
+    h2 { font-size: 36px; font-weight: 700; line-height: 1.16; letter-spacing: -0.022em; }
+    h3 { font-size: 26px; font-weight: 600; line-height: 1.25; letter-spacing: -0.015em; }
+    h4 { font-size: 20px; font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; }
+    p, li, td, th, input, select, textarea { font-size: 16px; font-weight: 400; line-height: 1.6; }
+    small, .text-small { font-size: 14px; font-weight: 400; line-height: 1.5; }
+    .text-caption, label { font-size: 12px; font-weight: 500; line-height: 1.4; }
+    button { font-size: 15px; font-weight: 600; line-height: 1.2; }
+    .nav-item { font-size: 14px; font-weight: 600; line-height: 1.2; }
+
+    /* Layered Shadows & Cool Blue-Tinted Surfaces */
+    .bg-white.rounded-2xl {
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.04);
+      border-color: #E2E8F0 !important;
+    }
+    .btn-hero-cta {
+      box-shadow: 0 1px 2px rgba(0,0,0,0.2), 0 8px 24px rgba(184, 244, 50, 0.28);
+    }
+    td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 9999px; }
+    .view-panel { animation: fadeSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes fadeSlide { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .nav-item.active { background: #FFFFFF; color: #0F172A; font-weight: 600; box-shadow: 0 1px 3px rgba(15,23,42,0.12); }
+    .leaflet-container { background: #F8FAFC; }
+    .custom-marker { background: transparent; border: none; }
+  </style>
+</head>
+<body class="bg-[#F4F6FA] text-[#0F172A] min-h-screen overflow-x-hidden selection:bg-[#B8F432] selection:text-[#142405]">
+
+  <!-- ======================================================================= -->
+  <!-- POLISHED LANDING PAGE (Apple/Linear Precision, Live Spatial Telemetry)  -->
+  <!-- ======================================================================= -->
+  <div id="landing-page" class="min-h-screen bg-[#181B22] text-slate-100 flex flex-col justify-between">
+    <!-- Top Bar -->
+    <nav class="max-w-7xl w-full mx-auto px-8 py-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-[#B8F432] text-[#1C1D21] flex items-center justify-center">
+          <i data-lucide="activity" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <div class="font-bold tracking-tight leading-none">IERS</div>
+          <div class="text-caption font-mono text-white/50">HUBBALLI–DHARWAD METRO</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <button onclick="openLoginScreen()" class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white transition">Sign In</button>
+        <button onclick="openLoginScreen('dispatcher@iers.gov.in','dispatch123')" class="px-5 py-2.5 rounded-xl bg-[#B8F432] hover:bg-[#a6e61e] text-[#1C1D21] transition">Launch Control Centre</button>
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="max-w-7xl w-full mx-auto px-8 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <div class="lg:col-span-7 space-y-6">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-caption font-mono text-[#B8F432]">
+          <span class="w-2 h-2 rounded-full bg-[#B8F432]"></span>
+          LIVE METROPOLITAN NETWORK · HUBBALLI &amp; DHARWAD
+        </div>
+        <h1 class="text-white">
+          Every second routed through real streets, not straight lines.
+        </h1>
+        <p class="text-white/70 max-w-2xl">
+          IERS coordinates citizens, dispatchers, ambulance crews, and trauma centres on a unified metropolitan road graph—evaluating one-way exemptions, physical vehicle clearance, live hospital capacity, and two-leg emergency journeys in milliseconds.
+        </p>
+        <div class="flex flex-wrap gap-4 pt-3">
+          <button onclick="openLoginScreen()" class="btn-hero-cta px-9 py-4 rounded-xl bg-[#B8F432] hover:bg-[#a6e61e] text-[#142405] text-[16px] flex items-center gap-2.5 transition">
+            <span>Open role portal</span><i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+          <button onclick="openLoginScreen('citizen@iers.gov.in','citizen123')" class="px-8 py-4 rounded-xl bg-white/10 hover:bg-white/15 text-slate-100 border border-white/15 text-[16px] transition">
+            Report an emergency
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Spatial Telemetry Card -->
+      <div class="lg:col-span-5 bg-[#20242E] rounded-[28px] border border-slate-700/60 p-7 space-y-5 shadow-2xl">
+        <div class="flex items-center justify-between pb-4 border-b border-white/10">
+          <span class="text-caption font-mono text-slate-400">Live network topology · Hubballi</span>
+          <span class="text-caption font-mono text-[#B8F432]">SRID 4326 · GiST</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="p-4 rounded-2xl bg-[#181B22] border border-white/5">
+            <div class="text-caption text-slate-400">Routable road segments</div>
+            <div id="land-edges" class="text-[28px] font-bold text-white mt-1 font-mono text-right">27,775</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-[#181B22] border border-white/5">
+            <div class="text-caption text-slate-400">Graph intersections</div>
+            <div id="land-nodes" class="text-[28px] font-bold text-[#B8F432] mt-1 font-mono text-right">20,049</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-[#181B22] border border-white/5">
+            <div class="text-caption text-slate-400">Connected hospitals</div>
+            <div id="land-hosps" class="text-[28px] font-bold text-white mt-1 font-mono text-right">45</div>
+          </div>
+          <div class="p-4 rounded-2xl bg-[#181B22] border border-white/5">
+            <div class="text-caption text-slate-400">Active fleet units</div>
+            <div id="land-ambs" class="text-[28px] font-bold text-[#B3A1F8] mt-1 font-mono text-right">14</div>
+          </div>
+        </div>
+        <div class="space-y-2.5 pt-2 text-small text-white/75">
+          <div class="flex items-center justify-between py-2 border-b border-white/10">
+            <span>Directional One-Way Enforcement</span>
+            <span class="font-mono text-caption text-[#B8F432]">1,837 segments</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-white/10">
+            <span>Authorized Emergency Contraflow</span>
+            <span class="font-mono text-caption text-[#B8F432]">766 urban streets</span>
+          </div>
+          <div class="flex items-center justify-between py-2">
+            <span>Two-Leg Routing (Pickup → Trauma)</span>
+            <span class="font-mono text-caption text-[#B8F432]">Dijkstra &amp; A*</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Strip -->
+    <footer class="max-w-7xl w-full mx-auto px-8 py-6 border-t border-white/10 flex flex-wrap items-center justify-between text-caption text-white/50">
+      <span>Intelligent Emergency Response System (IERS) · Hubballi–Dharwad</span>
+      <span>PostgreSQL · PostGIS · pgRouting · Native PyQGIS</span>
+    </footer>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MULTI-STAKEHOLDER LOGIN GATE (4 ROLES ONLY: NO ADMIN ROLE)              -->
+  <!-- ======================================================================= -->
+  <div id="login-screen" class="fixed inset-0 z-50 bg-[#1C1D21]/95 backdrop-blur-sm hidden flex items-center justify-center p-6">
+    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 bg-white rounded-[28px] overflow-hidden shadow-2xl">
+      <div class="md:col-span-5 bg-[#1C1D21] text-white p-8 flex flex-col justify-between border-r border-white/10">
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-[#B8F432] text-[#1C1D21] flex items-center justify-center">
+              <i data-lucide="activity" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-lg font-bold tracking-tight">IERS</div>
+              <div class="text-[11px] text-white/50 font-mono">HUBBALLI-DHARWAD METRO</div>
+            </div>
+          </div>
+          <h1 class="mt-8">
+            Multi-Stakeholder Emergency Response Platform
+          </h1>
+          <p class="text-xs text-white/60 mt-3 leading-relaxed">
+            Four role-scoped portals backed by one shared PostgreSQL/PostGIS/pgRouting core, labelled OpenStreetMap + QGIS cartography, and real-time ambulance tracking.
+          </p>
+        </div>
+        <div class="space-y-2 pt-8 border-t border-white/10 text-[11px] text-white/60">
+          <div class="flex items-center gap-2"><i data-lucide="map" class="w-3.5 h-3.5 text-[#B8F432]"></i> Labelled Basemap + Zoom-Dependent PostGIS Roads</div>
+          <div class="flex items-center gap-2"><i data-lucide="box" class="w-3.5 h-3.5 text-[#B8F432]"></i> Three.js 3D Ambulance Inspection</div>
+          <div class="flex items-center gap-2"><i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-[#B8F432]"></i> Transactional Hospital CSV Bulk Import</div>
+        </div>
+      </div>
+
+      <div class="md:col-span-7 p-8">
+        <h2 class="">Sign In to Portal</h2>
+        <p class="text-small text-[#6E737D] mt-1">Select a stakeholder role preset or enter credentials.</p>
+
+        <div class="grid grid-cols-2 gap-2.5 mt-5">
+          <button type="button" onclick="fillRole('citizen@iers.gov.in','citizen123')" class="text-left p-3 rounded-2xl border border-[#E6E8EC] hover:border-[#1C1D21] transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Citizen</span>
+              <span class="text-caption font-mono px-1.5 py-0.5 rounded bg-[#F4F5F7] font-semibold">PUBLIC</span>
+            </div>
+            <p class="text-caption text-[#6E737D] mt-1">Report &amp; track your emergency</p>
+          </button>
+          <button type="button" onclick="fillRole('dispatcher@iers.gov.in','dispatch123')" class="text-left p-3 rounded-2xl border border-[#E6E8EC] hover:border-[#1C1D21] transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Dispatcher</span>
+              <span class="text-caption font-mono px-1.5 py-0.5 rounded bg-[#B8F432] font-semibold">CONTROL</span>
+            </div>
+            <p class="text-caption text-[#6E737D] mt-1">Full metropolitan operations &amp; GIS</p>
+          </button>
+          <button type="button" onclick="fillRole('hospital1@iers.gov.in','hospital123')" class="text-left p-3 rounded-2xl border border-[#E6E8EC] hover:border-[#1C1D21] transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Hospital Staff</span>
+              <span class="text-caption font-mono px-1.5 py-0.5 rounded bg-[#B3A1F8]/30 font-semibold">KIMS</span>
+            </div>
+            <p class="text-caption text-[#6E737D] mt-1">Own beds, incoming units &amp; CSV import</p>
+          </button>
+          <button type="button" onclick="fillRole('operator1@iers.gov.in','operator123')" class="text-left p-3 rounded-2xl border border-[#E6E8EC] hover:border-[#1C1D21] transition">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold">Ambulance Operator</span>
+              <span class="text-caption font-mono px-1.5 py-0.5 rounded bg-[#1C1D21] text-[#B8F432] font-semibold">ALS-01</span>
+            </div>
+            <p class="text-caption text-[#6E737D] mt-1">Assignments, 10-state workflow &amp; GPS</p>
+          </button>
+        </div>
+
+        <div class="flex gap-2 mt-5 p-1 rounded-xl bg-[#F4F6FA] border border-slate-200">
+          <button id="tab-signin" type="button" onclick="switchAuthTab('signin')" class="flex-1 py-2 rounded-lg bg-[#1C1D21] text-[#B8F432] text-xs font-semibold transition">Sign in</button>
+          <button id="tab-signup" type="button" onclick="switchAuthTab('signup')" class="flex-1 py-2 rounded-lg text-slate-600 text-xs font-semibold transition">Create account (Sign up)</button>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)" class="space-y-3.5 mt-4">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Email</label>
+            <input id="login-email" type="email" required value="dispatcher@iers.gov.in" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-[#F4F6FA] text-sm focus:outline-none focus:border-[#1C1D21]" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Password</label>
+            <input id="login-password" type="password" required value="dispatch123" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-[#F4F6FA] text-sm focus:outline-none focus:border-[#1C1D21]" />
+          </div>
+          <div id="login-error" class="hidden text-xs text-[#EF4444] font-medium"></div>
+          <button type="submit" class="w-full py-3 rounded-xl bg-[#1C1D21] hover:bg-black text-[#B8F432] text-sm font-semibold transition flex items-center justify-center gap-2">
+            <span>Enter IERS portal</span><i data-lucide="arrow-right" class="w-4 h-4"></i>
+          </button>
+        </form>
+
+        <form id="register-form" onsubmit="handleRegister(event)" class="hidden space-y-3 mt-4">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Full name</label>
+            <input id="reg-name" type="text" required placeholder="e.g. Rahul Sharma" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-[#F4F6FA] text-sm focus:outline-none focus:border-[#1C1D21]" />
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Email</label>
+            <input id="reg-email" type="email" required placeholder="you@iers.gov.in" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-[#F4F6FA] text-sm focus:outline-none focus:border-[#1C1D21]" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Password</label>
+              <input id="reg-password" type="password" required minlength="4" placeholder="Min 4 chars" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-[#F4F6FA] text-sm focus:outline-none focus:border-[#1C1D21]" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500 uppercase mb-1">Account role</label>
+              <select id="reg-role" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-[#F4F6FA] text-sm">
+                <option value="CITIZEN">Citizen</option>
+                <option value="AMBULANCE_OPERATOR">Ambulance Operator</option>
+                <option value="HOSPITAL_STAFF">Hospital Staff</option>
+              </select>
+            </div>
+          </div>
+          <div id="reg-error" class="hidden text-xs text-[#EF4444] font-medium"></div>
+          <button type="submit" class="w-full py-3 rounded-xl bg-[#B8F432] hover:bg-[#a6e61e] text-[#142405] text-sm font-semibold transition">Create account &amp; enter portal</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MAIN APPLICATION SHELL (Role-Specific Navigation & Workspace)           -->
+  <!-- ======================================================================= -->
+  <div id="app-shell" class="hidden w-full min-h-screen flex">
+
+    <!-- DYNAMIC ROLE-SPECIFIC SIDEBAR -->
+    <aside class="w-64 bg-[#1C1D21] text-white flex flex-col justify-between p-5 shrink-0 sticky top-0 h-screen select-none z-30">
+      <div class="space-y-6 overflow-y-auto">
+        <div class="flex items-center justify-between px-1">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-[#B8F432] text-[#1C1D21] flex items-center justify-center">
+              <i data-lucide="activity" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class=" tracking-tight leading-none">IERS</div>
+              <div id="portal-subtitle" class="text-[10px] text-white/50 font-mono mt-0.5">PORTAL</div>
+            </div>
+          </div>
+        </div>
+
+        <nav id="role-sidebar-nav" class="space-y-1 text-xs"></nav>
+      </div>
+
+      <div class="space-y-3 pt-4 border-t border-white/10">
+        <div class="px-2">
+          <div id="sidebar-user-name" class="text-xs font-semibold text-white truncate">—</div>
+          <div id="sidebar-user-role" class="text-caption font-mono text-[#B8F432] mt-0.5">—</div>
+        </div>
+        <button onclick="logout()" class="w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-white/70 hover:text-white transition">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i><span>Switch Portal / Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- RIGHT WORKSPACE -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <header class="h-20 bg-white border-b border-[#E6E8EC] px-6 flex items-center justify-between sticky top-0 z-20">
+        <div class="flex items-center gap-3">
+          <h2 id="page-title" class="!text-[26px] !font-semibold !leading-[1.3] tracking-tight">IERS</h2>
+          <span id="sim-banner" class="hidden text-caption font-mono px-2.5 py-1 rounded-full bg-[#B3A1F8]/25 font-semibold">SIMULATED TRAFFIC</span>
+        </div>
+        <div id="header-actions" class="flex items-center gap-2">
+          <div id="sim-control-bar" class="hidden flex items-center gap-1.5 bg-[#F4F5F7] border border-[#E6E8EC] rounded-xl px-2 py-1 text-xs">
+            <button id="btn-live-sim" onclick="toggleLiveSimulation()" class="px-2.5 py-1.5 rounded-lg bg-[#1C1D21] text-[#B8F432] font-semibold transition flex items-center gap-1.5">
+              <span id="live-sim-dot" class="w-2 h-2 rounded-full bg-[#6E737D]"></span>
+              <span id="live-sim-label">Auto-Sim: OFF</span>
+            </button>
+            <button id="btn-sim-pause" onclick="togglePauseSimulation()" class="hidden px-2 py-1.5 rounded-lg border border-[#E6E8EC] bg-white hover:bg-[#1C1D21] hover:text-white font-semibold transition">Pause</button>
+            <select id="sim-speed-select" onchange="changeSimSpeed(this.value)" title="Simulation Speed" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white font-mono font-semibold text-[#0F172A]">
+              <option value="1">1x</option>
+              <option value="2" selected>2x</option>
+              <option value="5">5x</option>
+              <option value="10">10x</option>
+            </select>
+            <span class="h-5 w-px bg-slate-300 mx-1.5"></span>
+            <button onclick="resetDemoScenario()" title="Reset active simulated missions and release all ambulances" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-[#EF4444] hover:text-white hover:border-[#EF4444] text-slate-600 font-semibold transition">Reset fleet</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 p-6 space-y-6">
+
+        <!-- =============================================================== -->
+        <!-- CITIZEN PORTAL VIEWS                                            -->
+        <!-- =============================================================== -->
+        <section id="view-cit-report" class="view-panel hidden max-w-2xl mx-auto bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-4">
+          <div>
+            <h3 class="">Report an Emergency</h3>
+            <p class="text-small text-[#6E737D]">Detect your GPS location or select a location in Hubballi-Dharwad. Nearest ambulance will be dispatched immediately.</p>
+          </div>
+          <form onsubmit="citizenSubmitEmergency(event)" class="space-y-3.5 text-xs">
+            <div>
+              <label class="block text-[#6E737D] font-medium mb-1">Emergency Type</label>
+              <select id="cit-type" class="w-full px-3.5 py-2.5 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]">
+                <option>Acute Cardiac Arrest</option>
+                <option>Road Traffic Accident</option>
+                <option>Severe Trauma / Bleeding</option>
+                <option>Stroke / Unconscious</option>
+                <option>Breathing Difficulty</option>
+                <option>Other Medical Emergency</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[#6E737D] font-medium mb-1">People Affected</label>
+                <input id="cit-people" type="number" min="1" value="1" class="w-full px-3.5 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]" />
+              </div>
+              <div>
+                <label class="block text-[#6E737D] font-medium mb-1">Contact Phone</label>
+                <input id="cit-phone" type="text" value="112" class="w-full px-3.5 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[#6E737D] font-medium mb-1">Latitude</label>
+                <input id="cit-lat" type="number" step="0.000001" value="15.364700" class="w-full px-3.5 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7] font-mono" />
+              </div>
+              <div>
+                <label class="block text-[#6E737D] font-medium mb-1">Longitude</label>
+                <input id="cit-lon" type="number" step="0.000001" value="75.124000" class="w-full px-3.5 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7] font-mono" />
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button type="button" onclick="citizenDetectGPS()" class="flex-1 py-2 rounded-xl border border-[#E6E8EC] hover:bg-[#F4F5F7] font-semibold flex items-center justify-center gap-1.5">
+                <i data-lucide="crosshair" class="w-3.5 h-3.5"></i> Detect My GPS Location
+              </button>
+              <button type="button" onclick="setCitLoc(15.3647,75.1240)" class="px-3 py-2 rounded-xl border border-[#E6E8EC] hover:bg-[#F4F5F7]">Hubballi</button>
+              <button type="button" onclick="setCitLoc(15.4589,75.0078)" class="px-3 py-2 rounded-xl border border-[#E6E8EC] hover:bg-[#F4F5F7]">Dharwad</button>
+            </div>
+            <div>
+              <label class="block text-[#6E737D] font-medium mb-1">Description / Landmark</label>
+              <textarea id="cit-desc" rows="2" placeholder="Describe patient condition and nearby landmark..." class="w-full px-3.5 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]"></textarea>
+            </div>
+            <button type="submit" class="w-full py-3 rounded-xl bg-[#EF4444] hover:bg-red-600 text-white font-bold transition">
+              Submit Emergency Report
+            </button>
+          </form>
+          <div id="cit-submit-msg" class="hidden p-4 rounded-xl bg-[#F4F5F7] border border-[#E6E8EC] text-xs"></div>
+        </section>
+
+        <section id="view-cit-track" class="view-panel hidden space-y-4">
+          <div class="bg-white rounded-2xl border border-[#E6E8EC] p-4 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div id="cit-track-header" class="font-bold">Select a report from "My Reports" or submit an emergency to track live.</div>
+            <button id="btn-cit-sim-anim" onclick="animateCitizenAmbulance()" class="hidden px-3.5 py-1.5 rounded-xl bg-[#1C1D21] text-[#B8F432] font-semibold">
+              Simulate Live Route Movement
+            </button>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-8 bg-white rounded-2xl border border-[#E6E8EC] overflow-hidden">
+              <div id="cit-map" class="w-full h-[460px]"></div>
+            </div>
+            <div id="cit-track-timeline" class="lg:col-span-4 bg-white rounded-2xl border border-[#E6E8EC] p-5 space-y-3 text-xs">
+              <div class="font-bold">Live Status &amp; ETA</div>
+              <div class="text-[#6E737D]">No active tracking session.</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="view-cit-reports" class="view-panel hidden bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-3 text-xs">
+          <div class="flex items-center justify-between pb-3 border-b border-[#E6E8EC]">
+            <h3 class="">My Submitted Emergency Reports</h3>
+            <button onclick="loadCitizenReports()" class="text-[#6E737D] hover:text-[#1C1D21]">Refresh</button>
+          </div>
+          <div id="cit-reports-list" class="divide-y divide-[#E6E8EC]"></div>
+        </section>
+
+        <section id="view-cit-profile" class="view-panel hidden max-w-lg bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-2 text-xs">
+          <h3 class="">Citizen Account Profile</h3>
+          <div id="cit-profile-body" class="space-y-1.5 text-[#6E737D]"></div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- DISPATCHER PORTAL VIEWS                                         -->
+        <!-- =============================================================== -->
+        <section id="view-disp-dashboard" class="view-panel hidden space-y-6">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white rounded-2xl p-5 border border-[#E6E8EC]">
+              <div class="text-small text-[#6E737D]">Active Emergencies</div>
+              <div id="kpi-active-inc" class="text-3xl font-bold mt-1">—</div>
+              <div id="kpi-p1-sub" class="text-[11px] text-[#EF4444] font-semibold mt-1">P1 Critical: —</div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-[#E6E8EC]">
+              <div class="text-small text-[#6E737D]">Available Ambulances</div>
+              <div id="kpi-avail-amb" class="text-3xl font-bold mt-1">—</div>
+              <div id="kpi-amb-sub" class="text-caption text-[#6E737D] mt-1">Total fleet: —</div>
+            </div>
+            <div class="bg-white rounded-2xl p-5 border border-[#E6E8EC]">
+              <div class="text-small text-[#6E737D]">Open ICU Beds (22 Hospitals)</div>
+              <div id="kpi-icu-beds" class="text-3xl font-bold mt-1">—</div>
+              <div class="text-caption text-[#6E737D] mt-1">Real OSM coords · Prototype beds</div>
+            </div>
+            <div class="bg-[#1C1D21] text-white rounded-2xl p-5">
+              <div class="text-xs text-white/60">Hubballi-Dharwad Network</div>
+              <div id="kpi-road-km" class="text-3xl font-bold mt-1 text-[#B8F432]">—</div>
+              <div id="kpi-road-sub" class="text-[11px] text-white/60 mt-1">PostGIS · pgRouting</div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 bg-white rounded-2xl border border-[#E6E8EC] overflow-hidden">
+              <div class="px-5 py-3 border-b border-[#E6E8EC] flex items-center justify-between text-xs">
+                <span class="font-bold">Live Metropolitan Overview (Native QGIS + PostGIS)</span>
+                <button onclick="switchView('disp-map')" class="px-3 py-1 rounded-lg bg-[#1C1D21] text-[#B8F432] font-semibold">Open Full GIS Map</button>
+              </div>
+              <div id="dash-map" class="w-full h-[430px]"></div>
+            </div>
+            <div class="lg:col-span-4 bg-white rounded-2xl border border-[#E6E8EC] p-4 flex flex-col">
+              <div class="text-xs font-bold pb-3 border-b border-[#E6E8EC]">Priority Emergency Queue</div>
+              <div id="dash-queue" class="flex-1 overflow-y-auto space-y-2.5 pt-3 max-h-[400px] text-xs"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- REBUILT METROPOLITAN GIS MAP -->
+        <section id="view-disp-map" class="view-panel hidden space-y-3">
+          <div class="bg-white rounded-2xl border border-[#E6E8EC] p-3.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-1.5 rounded-lg bg-[#1C1D21] text-[#B8F432] font-mono font-semibold">QGIS Native Tiles (PostGIS)</span>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F4F5F7]"><input type="checkbox" checked onchange="toggleMapLayer('hospitals',this.checked)" /> Hospitals</label>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F4F5F7]"><input type="checkbox" checked onchange="toggleMapLayer('ambulances',this.checked)" /> Ambulances</label>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F4F5F7]"><input type="checkbox" checked onchange="toggleMapLayer('incidents',this.checked)" /> Emergencies</label>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F4F5F7]"><input id="chk-bbox-roads" type="checkbox" onchange="toggleBboxRoads(this.checked)" /> Interactive Road Inspector</label>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F4F5F7]"><input type="checkbox" onchange="toggleRoadOverlay('congested',this.checked)" /> Congested</label>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F4F5F7]"><input type="checkbox" onchange="toggleRoadOverlay('corridors',this.checked)" /> Corridors</label>
+              <label class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#F4F5F7]"><input type="checkbox" onchange="toggleRoadOverlay('oneway',this.checked)" /> One-Way</label>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="map-search-input" oninput="searchMapEntity(this.value)" placeholder="Locate hospital / ambulance..." class="px-3 py-1.5 rounded-lg border border-[#E6E8EC] bg-[#F4F5F7] w-48" />
+              <button onclick="fitMetro(fullMap)" class="px-3 py-1.5 rounded-lg bg-[#1C1D21] text-[#B8F432] font-semibold">Fit Hubballi-Dharwad</button>
+              <button onclick="document.getElementById('full-map-wrap').requestFullscreen()" class="px-3 py-1.5 rounded-lg border border-[#E6E8EC]">Fullscreen</button>
+            </div>
+          </div>
+
+          <div id="full-map-wrap" class="relative bg-white rounded-2xl border border-[#E6E8EC] overflow-hidden">
+            <div id="full-map" class="w-full h-[calc(100vh-220px)] min-h-[540px]"></div>
+            <div class="absolute bottom-4 left-4 z-[1000] bg-white/95 backdrop-blur border border-[#E6E8EC] rounded-xl p-3 text-[11px] space-y-1 shadow-sm">
+              <div class="font-bold">Hubballi-Dharwad GIS Legend</div>
+              <div class="flex items-center gap-2"><span class="w-4 h-1 bg-[#EA580C] inline-block"></span> National / Trunk Highway (NH48)</div>
+              <div class="flex items-center gap-2"><span class="w-4 h-0.5 bg-[#1C1D21] inline-block"></span> Primary / Secondary Arterial</div>
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#B3A1F8] border border-[#1C1D21] inline-flex items-center justify-center text-[8px] font-bold">H</span> Real OSM Hospital</div>
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#B8F432] border border-[#1C1D21] inline-block"></span> Ambulance Unit (Live)</div>
+              <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-[#EF4444] inline-block"></span> Active Emergency (P1-P4)</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- DISPATCHER EMERGENCY MANAGEMENT + SPATIAL RANKING PANEL -->
+        <section id="view-disp-emergencies" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-6 bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-[#E6E8EC]">
+              <h3>All Metropolitan Emergencies</h3>
+              <button onclick="loadAllDispatcherData()" class="px-3 py-1.5 rounded-lg bg-[#F4F5F7]">Refresh</button>
+            </div>
+            <div id="disp-emergencies-list" class="divide-y divide-[#E6E8EC]"></div>
+          </div>
+          <div id="disp-ranking-panel" class="lg:col-span-6 bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-4">
+            <h3>Spatial Ambulance Ranking &amp; Assignment</h3>
+            <p class="text-small text-[#6E737D]">Click <b>Rank &amp; Assign</b> on any emergency to view ambulances ranked by real pgRouting travel time (seconds) and recommended hospitals.</p>
+          </div>
+        </section>
+
+        <!-- DISPATCHER AMBULANCE FLEET + 3D INSPECTION -->
+        <section id="view-disp-fleet" class="view-panel hidden space-y-4">
+          <div class="bg-white rounded-2xl border border-[#E6E8EC] p-6 text-xs">
+            <div class="flex items-center justify-between pb-3 border-b border-[#E6E8EC]">
+              <h3 class="">Metropolitan Ambulance Fleet (Click "3D Inspect" for Interactive Three.js Model)</h3>
+              <button onclick="loadAllDispatcherData()" class="text-[#6E737D]">Refresh</button>
+            </div>
+            <div id="disp-fleet-list" class="divide-y divide-[#E6E8EC] mt-2"></div>
+          </div>
+        </section>
+
+        <!-- DISPATCHER HOSPITALS OVERSIGHT -->
+        <section id="view-disp-hospitals" class="view-panel hidden space-y-4">
+          <div id="disp-hospitals-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs"></div>
+        </section>
+
+        <!-- DISPATCHER ROUTE OPTIMISATION (Interactive Vehicle Constraints + Live Closure Rerouting) -->
+        <section id="view-disp-routing" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-4 bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-4">
+            <h3>Route Optimisation</h3>
+            <select id="rt-algo" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]">
+              <option value="DIJKSTRA">Dijkstra (pgr_dijkstra)</option>
+              <option value="ASTAR">A* Heuristic (pgr_astar)</option>
+            </select>
+            <select id="rt-preset" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]">
+              <option value="15.4590,75.0112,15.369641,75.123161">Dharwad Civil Hospital → KIMS Hubballi</option>
+              <option value="15.3647,75.1240,15.35258,75.12439">Vidyanagar → KLE Suchirayu Hospital</option>
+              <option value="15.46444,75.01067,15.4215,75.0528">District Hospital Dharwad → SDM Medical</option>
+            </select>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-caption text-[#6E737D] mb-1">Vehicle Height (m)</label>
+                <input id="rt-height" type="number" step="0.1" value="2.4" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7] font-mono" />
+              </div>
+              <div>
+                <label class="block text-caption text-[#6E737D] mb-1">Vehicle Width (m)</label>
+                <input id="rt-width" type="number" step="0.1" value="2.2" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7] font-mono" />
+              </div>
+            </div>
+            <button onclick="runRouteComparison()" class="w-full py-2.5 rounded-xl bg-[#1C1D21] text-[#B8F432]">
+              Compare Normal vs Ambulance
+            </button>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="blockMidRouteAndReroute()" class="py-2 rounded-xl border border-[#EF4444] text-[#EF4444] text-small">Block Mid-Route</button>
+              <button onclick="resetTrafficSim(); runRouteComparison();" class="py-2 rounded-xl border border-[#E6E8EC] text-small">Reopen All Roads</button>
+            </div>
+            <div id="rt-results" class="space-y-3 pt-2 border-t border-[#E6E8EC]"></div>
+          </div>
+          <div class="lg:col-span-8 bg-white rounded-2xl border border-[#E6E8EC] overflow-hidden">
+            <div id="route-map" class="w-full h-[600px]"></div>
+          </div>
+        </section>
+
+        <!-- DISPATCHER TRAFFIC SIMULATION -->
+        <section id="view-disp-traffic" class="view-panel hidden space-y-6">
+          <div class="bg-[#1C1D21] text-white rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div class="text-caption font-mono text-[#B8F432]">SIMULATED TRAFFIC MODEL — NOT LIVE TRAFFIC DATA</div>
+              <h3 class=" mt-1">Controllable Traffic Density &amp; Corridor Engine</h3>
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <button onclick="setTrafficLevel('FREE_FLOW')" class="px-3 py-2 rounded-xl bg-white/10">Free Flow</button>
+              <button onclick="setTrafficLevel('MODERATE')" class="px-3 py-2 rounded-xl bg-white/10">Moderate (1.6x)</button>
+              <button onclick="setTrafficLevel('RUSH_HOUR')" class="px-3 py-2 rounded-xl bg-[#B3A1F8] text-[#1C1D21] font-semibold">Rush Hour (2.8x)</button>
+              <button onclick="setTrafficLevel('SEVERE')" class="px-3 py-2 rounded-xl bg-[#EF4444] text-white font-semibold">Severe (3.8x)</button>
+              <button onclick="toggleGlobalCorridor(true)" class="px-3 py-2 rounded-xl bg-[#B8F432] text-[#1C1D21] font-semibold">Green Corridors</button>
+              <button onclick="resetTrafficSim()" class="px-3 py-2 rounded-xl border border-white/20">Reset</button>
+            </div>
+          </div>
+          <div id="traffic-stats-grid" class="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs"></div>
+        </section>
+
+        <!-- DISPATCHER SYSTEM DIAGNOSTICS + DATA STORAGE TRANSPARENCY -->
+        <section id="view-disp-diagnostics" class="view-panel hidden space-y-6 text-xs">
+          <div class="bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-3">
+            <h3 class="">Data Architecture &amp; Storage Transparency (Read-Only, Zero Secrets)</h3>
+            <p class="text-[#6E737D]">Every table below lives in PostgreSQL 17.5 + PostGIS 3.5.2 + pgRouting 3.7.3 (`iers_db`, schema `iers`). Map tiles are served from OpenStreetMap Standard + Native PyQGIS.</p>
+            <div id="storage-inventory-table" class="overflow-x-auto pt-2"></div>
+          </div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- HOSPITAL STAFF PORTAL VIEWS (Strictly Scoped to Own Hospital)   -->
+        <!-- =============================================================== -->
+        <section id="view-hosp-overview" class="view-panel hidden space-y-6 text-xs">
+          <div id="hosp-my-card" class="bg-white rounded-2xl border border-[#E6E8EC] p-6"></div>
+        </section>
+
+        <section id="view-hosp-capacity" class="view-panel hidden max-w-xl bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-4 text-xs">
+          <h3 class="">Update Own Hospital Bed &amp; Facility Capacity</h3>
+          <form onsubmit="saveHospitalCapacity(event)" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div><label class="block text-[#6E737D] mb-1">Total Beds</label><input id="hc-beds" type="number" min="0" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]" /></div>
+              <div><label class="block text-[#6E737D] mb-1">Available ICU Beds</label><input id="hc-icu" type="number" min="0" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]" /></div>
+              <div><label class="block text-[#6E737D] mb-1">Trauma Beds Available</label><input id="hc-trauma" type="number" min="0" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]" /></div>
+              <div><label class="block text-[#6E737D] mb-1">Emergency Dept Capacity</label><input id="hc-ed" type="number" min="0" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]" /></div>
+            </div>
+            <div>
+              <label class="block text-[#6E737D] mb-1">Service Status</label>
+              <select id="hc-status" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]">
+                <option value="OPERATIONAL">OPERATIONAL</option>
+                <option value="LIMITED">LIMITED</option>
+                <option value="DIVERTING">DIVERTING</option>
+                <option value="MAINTENANCE">MAINTENANCE</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[#6E737D] mb-1">Service Notes / Interruptions</label>
+              <input id="hc-notes" type="text" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]" />
+            </div>
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-[#1C1D21] text-[#B8F432] font-semibold">Save Capacity &amp; Log Audit</button>
+          </form>
+        </section>
+
+        <section id="view-hosp-incoming" class="view-panel hidden bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-3 text-xs">
+          <h3 class="">Incoming Ambulances Addressed to Your Hospital</h3>
+          <div id="hosp-incoming-list" class="divide-y divide-[#E6E8EC]"></div>
+        </section>
+
+        <!-- HOSPITAL BULK CSV DATA IMPORT -->
+        <section id="view-hosp-csv" class="view-panel hidden space-y-6 text-xs">
+          <div class="bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 class="">Bulk CSV Operational Data Import</h3>
+                <p class="text-[#6E737D] mt-0.5">Upload UTF-8 CSV to update your hospital's capacity transactionally. Cross-hospital IDs are blocked and real coordinates are never overwritten.</p>
+              </div>
+              <a href="/api/v1/hospital/csv/template" onclick="downloadCsvTemplate(event)" class="px-3.5 py-2 rounded-xl border border-[#E6E8EC] hover:bg-[#F4F5F7] font-semibold flex items-center gap-1.5">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i> Download Sample CSV Template
+              </a>
+            </div>
+
+            <div class="border-2 border-dashed border-[#D5D8DF] rounded-2xl p-6 text-center bg-[#FAFAFB]">
+              <input id="csv-file-input" type="file" accept=".csv,text/csv" onchange="handleCsvFile(event)" class="text-xs" />
+              <p class="text-caption text-[#6E737D] mt-2">Max 2 MB · Max 500 rows · UTF-8 CSV</p>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <select id="csv-mode" class="px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7] font-semibold">
+                <option value="UPDATE_EXISTING">Mode: Update Existing Records</option>
+                <option value="INSERT_NEW">Mode: Insert New Records</option>
+              </select>
+              <button onclick="previewCsvImport()" class="px-4 py-2 rounded-xl border border-[#1C1D21] font-semibold">1. Validate &amp; Preview</button>
+              <button id="btn-csv-commit" onclick="commitCsvImport()" disabled class="px-4 py-2 rounded-xl bg-[#1C1D21] text-[#B8F432] font-semibold disabled:opacity-40">2. Confirm &amp; Commit Import</button>
+            </div>
+
+            <div id="csv-preview-box" class="hidden p-4 rounded-xl bg-[#F4F5F7] border border-[#E6E8EC] space-y-2"></div>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-3">
+            <h3 class="">CSV Import History</h3>
+            <div id="csv-history-list" class="divide-y divide-[#E6E8EC]"></div>
+          </div>
+        </section>
+
+        <section id="view-hosp-history" class="view-panel hidden bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-3 text-xs">
+          <h3 class="">Capacity Update Audit History</h3>
+          <div id="hosp-history-list" class="divide-y divide-[#E6E8EC]"></div>
+        </section>
+
+        <!-- =============================================================== -->
+        <!-- AMBULANCE OPERATOR PORTAL VIEWS (WITH LIVE TWO-LEG QGIS MAP)    -->
+        <!-- =============================================================== -->
+        <section id="view-op-assignment" class="view-panel hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-5 space-y-4">
+            <div id="op-unit-card" class="bg-[#1C1D21] text-white rounded-2xl p-6"></div>
+            <div id="op-assignment-card" class="bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-4"></div>
+            <div class="bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-3">
+              <h4>Device GPS Telemetry</h4>
+              <button onclick="operatorSendGPS()" class="w-full py-2.5 rounded-xl bg-[#1C1D21] text-[#B8F432]">Send Real Browser GPS</button>
+              <div id="op-loc-msg" class="text-caption text-[#6E737D]"></div>
+            </div>
+          </div>
+          <div class="lg:col-span-7 bg-white rounded-2xl border border-[#E6E8EC] overflow-hidden flex flex-col">
+            <div class="px-5 py-3 border-b border-[#E6E8EC] flex items-center justify-between">
+              <span id="op-map-title" class="font-semibold">Live Navigation Map (Leg 1: Emergency → Leg 2: Hospital)</span>
+              <span id="op-map-eta" class="text-caption font-mono px-2.5 py-1 rounded-full bg-[#B8F432] text-[#1C1D21] font-bold">Standby</span>
+            </div>
+            <div id="op-map" class="w-full h-[560px]"></div>
+          </div>
+        </section>
+
+        <section id="view-op-history" class="view-panel hidden max-w-2xl mx-auto bg-white rounded-2xl border border-[#E6E8EC] p-6 space-y-3 text-xs">
+          <h3 class="">My Previous Assignments</h3>
+          <div id="op-history-list" class="divide-y divide-[#E6E8EC]"></div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- THREE.JS 3D AMBULANCE INSPECTION MODAL (Dispatcher Fleet)               -->
+  <!-- ======================================================================= -->
+  <div id="modal-3d" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-5xl rounded-[28px] overflow-hidden shadow-2xl grid grid-cols-1 md:grid-cols-12">
+      <div class="md:col-span-7 bg-[#1C1D21] relative min-h-[420px]">
+        <div id="three-canvas-container" class="w-full h-[460px] cursor-grab"></div>
+        <div class="absolute top-4 left-4 text-[11px] font-mono text-white/70 bg-black/40 px-3 py-1.5 rounded-lg">
+          Drag to rotate · Scroll to zoom · Procedural Three.js ALS Unit (MIT)
+        </div>
+      </div>
+      <div class="md:col-span-5 p-6 flex flex-col justify-between text-xs">
+        <div>
+          <div class="flex items-center justify-between pb-3 border-b border-[#E6E8EC]">
+            <h3 id="modal-3d-title" class="">Ambulance 3D Inspection</h3>
+            <button onclick="close3DModal()" class="p-1.5 rounded-lg hover:bg-[#F4F5F7]"><i data-lucide="x" class="w-4 h-4"></i></button>
+          </div>
+          <div id="modal-3d-details" class="space-y-2.5 mt-4"></div>
+        </div>
+        <div class="pt-4 border-t border-[#E6E8EC] flex gap-2">
+          <button onclick="set3DCameraView('front')" class="flex-1 py-2 rounded-xl bg-[#F4F5F7] font-semibold">Front</button>
+          <button onclick="set3DCameraView('side')" class="flex-1 py-2 rounded-xl bg-[#F4F5F7] font-semibold">Side</button>
+          <button onclick="set3DCameraView('iso')" class="flex-1 py-2 rounded-xl bg-[#1C1D21] text-[#B8F432] font-semibold">Isometric</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- JAVASCRIPT APPLICATION CONTROLLER                                       -->
+  <!-- ======================================================================= -->
+  <script>
+    lucide.createIcons();
+    const METRO_BOUNDS = L.latLngBounds([15.2093, 74.9135], [15.6164, 75.3113]);
+    let authToken = localStorage.getItem('iers_token') || null;
+    let currentUser = JSON.parse(localStorage.getItem('iers_user') || 'null');
+
+    let dashMap = null, fullMap = null, routeMap = null, citMap = null;
+    let fullBasemapLayer = null, bboxRoadsLayer = null, activeRouteCoords = [], animTimer = null;
+    let layers = {
+      dash: { hospitals: L.markerClusterGroup({ maxClusterRadius: 45 }), ambulances: L.markerClusterGroup({ maxClusterRadius: 35 }), incidents: L.layerGroup() },
+      full: { hospitals: L.markerClusterGroup({ maxClusterRadius: 45 }), ambulances: L.markerClusterGroup({ maxClusterRadius: 35 }), incidents: L.layerGroup(), roads: {} },
+      route: L.layerGroup(),
+      cit: L.layerGroup(),
+    };
+    let cachedHospitals = [], cachedAmbulances = [], cachedIncidents = [];
+    let uploadedCsvText = '', uploadedCsvName = 'upload.csv';
+
+    const ROLE_MENUS = {
+      CITIZEN: [
+        { id: 'cit-report', label: 'Report Emergency', icon: 'alert-circle' },
+        { id: 'cit-track', label: 'Track Emergency', icon: 'navigation' },
+        { id: 'cit-reports', label: 'My Reports', icon: 'file-text' },
+        { id: 'cit-profile', label: 'Profile', icon: 'user' },
+      ],
+      DISPATCHER: [
+        { id: 'disp-dashboard', label: 'Operations Dashboard', icon: 'layout-grid' },
+        { id: 'disp-emergencies', label: 'Emergency Management', icon: 'alert-triangle' },
+        { id: 'disp-map', label: 'Metropolitan GIS Map', icon: 'map' },
+        { id: 'disp-fleet', label: 'Ambulance Fleet & 3D', icon: 'truck' },
+        { id: 'disp-hospitals', label: 'Hospitals Oversight', icon: 'building-2' },
+        { id: 'disp-routing', label: 'Route Optimisation', icon: 'route' },
+        { id: 'disp-traffic', label: 'Traffic Simulation', icon: 'gauge' },
+        { id: 'disp-diagnostics', label: 'System Diagnostics', icon: 'database' },
+      ],
+      HOSPITAL_STAFF: [
+        { id: 'hosp-overview', label: 'Hospital Overview', icon: 'building-2' },
+        { id: 'hosp-capacity', label: 'Bed & Capacity', icon: 'sliders' },
+        { id: 'hosp-incoming', label: 'Incoming Ambulances', icon: 'truck' },
+        { id: 'hosp-csv', label: 'Bulk CSV Import', icon: 'file-spreadsheet' },
+        { id: 'hosp-history', label: 'Update History', icon: 'history' },
+      ],
+      AMBULANCE_OPERATOR: [
+        { id: 'op-assignment', label: 'Current Assignment', icon: 'navigation' },
+        { id: 'op-history', label: 'Assignment History', icon: 'history' },
+      ],
+    };
+
+    function openLoginScreen(presetEmail, presetPw) {
+      if (presetEmail) fillRole(presetEmail, presetPw);
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+
+    function fillRole(email, pw) {
+      document.getElementById('login-email').value = email;
+      document.getElementById('login-password').value = pw;
+    }
+
+    async function apiFetch(path, opts = {}) {
+      const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+      if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+      const res = await fetch(path, { ...opts, headers });
+      if (res.status === 401) { logout(); throw new Error('Session expired'); }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Request failed');
+      return data;
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const errEl = document.getElementById('login-error');
+      errEl.classList.add('hidden');
+      try {
+        const res = await fetch('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('login-email').value,
+            password: document.getElementById('login-password').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Login failed');
+        authToken = data.access_token;
+        currentUser = data.user;
+        localStorage.setItem('iers_token', authToken);
+        localStorage.setItem('iers_user', JSON.stringify(currentUser));
+        enterPortal();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    function logout() {
+      authToken = null; currentUser = null;
+      localStorage.removeItem('iers_token'); localStorage.removeItem('iers_user');
+      document.getElementById('app-shell').classList.add('hidden');
+      document.getElementById('landing-page').classList.remove('hidden');
+      document.getElementById('login-screen').classList.remove('hidden');
+    }
+
+    function enterPortal() {
+      document.getElementById('landing-page').classList.add('hidden');
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-shell').classList.remove('hidden');
+      const role = currentUser.role;
+      document.getElementById('portal-subtitle').textContent = role.replace('_', ' ');
+      document.getElementById('sidebar-user-name').textContent = currentUser.name;
+      document.getElementById('sidebar-user-role').textContent = `${role}${currentUser.assigned_entity_id ? ' · ' + currentUser.assigned_entity_id : ''}`;
+
+      const menu = ROLE_MENUS[role] || [];
+      document.getElementById('role-sidebar-nav').innerHTML = menu.map((m, idx) => `
+        <button data-view="${m.id}" onclick="switchView('${m.id}')" class="nav-item ${idx===0?'active':''} w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/5 transition">
+          <i data-lucide="${m.icon}" class="w-4 h-4"></i><span>${m.label}</span>
+        </button>
+      `).join('');
+      lucide.createIcons();
+
+      if (menu.length) switchView(menu[0].id);
+    }
+
+    function qgisTileLayer() {
+      return L.tileLayer('/tiles/{z}/{x}/{y}.png', {
+        minZoom: 8, maxZoom: 17,
+        attribution: 'IERS Native PyQGIS Project (PostGIS)',
+      });
+    }
+
+    function addLocalityLabels(mapObj) {
+      const hubs = [
+        [15.3647, 75.1240, 'HUBBALLI'],
+        [15.4589, 75.0078, 'DHARWAD'],
+        [15.4050, 75.0600, 'NAVANAGAR CORRIDOR'],
+        [15.3696, 75.1231, 'VIDYANAGAR'],
+        [15.3452, 75.1489, 'OLD HUBBALLI'],
+      ];
+      hubs.forEach(([lat, lon, name]) => {
+        L.marker([lat, lon], {
+          interactive: false,
+          icon: L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="font-size:10px;font-weight:800;letter-spacing:0.08em;color:#1C1D21;background:rgba(255,255,255,0.85);padding:2px 6px;border-radius:4px;border:1px solid #CBD5E1;white-space:nowrap;">${name}</div>`,
+          }),
+        }).addTo(mapObj);
+      });
+    }
+
+    // Custom Recognisable SVG Map Icons (No anonymous dots!)
+    function hospitalIcon(traumaLevel) {
+      const bg = traumaLevel === 1 ? '#1C1D21' : '#FFFFFF';
+      const fg = traumaLevel === 1 ? '#B8F432' : '#1C1D21';
+      return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="width:26px;height:26px;border-radius:8px;background:${bg};color:${fg};border:2px solid #1C1D21;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;box-shadow:0 2px 6px rgba(0,0,0,0.25);">H</div>`,
+        iconSize: [26, 26], iconAnchor: [13, 13],
+      });
+    }
+
+    function ambulanceIcon(status, bearing = 0) {
+      const ring = status === 'AVAILABLE' ? '#22C55E'
+        : (status === 'UNAVAILABLE' ? '#94A3B8'
+        : (status === 'EN_ROUTE_TO_HOSPITAL' || status === 'ARRIVED_AT_HOSPITAL' || status === 'HANDOVER_IN_PROGRESS' ? '#7C3AED'
+        : (status === 'ARRIVED_AT_EMERGENCY' || status === 'PICKUP_IN_PROGRESS' || status === 'PATIENT_ONBOARD' ? '#F59E0B' : '#2563EB')));
+      return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="width:32px;height:32px;border-radius:999px;background:rgba(255,255,255,0.94);border:2.5px solid ${ring};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
+          <div style="transform:rotate(${bearing}deg);display:flex;align-items:center;justify-content:center;">
+            <svg width="18" height="24" viewBox="0 0 20 28" fill="none">
+              <rect x="3" y="2" width="14" height="24" rx="3.5" fill="#FFFFFF" stroke="#1C1D21" stroke-width="1.6"/>
+              <rect x="4.5" y="4" width="11" height="4.5" rx="1.2" fill="#38BDF8" stroke="#1C1D21" stroke-width="0.8"/>
+              <rect x="5" y="9.5" width="4.5" height="2" rx="0.6" fill="#EF4444"/>
+              <rect x="10.5" y="9.5" width="4.5" height="2" rx="0.6" fill="#2563EB"/>
+              <path d="M10 14.5V21.5M6.5 18H13.5" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>`,
+        iconSize: [32, 32], iconAnchor: [16, 16],
+      });
+    }
+
+    function emergencyIcon(priority) {
+      const bg = priority === 'P1' ? '#EF4444' : (priority === 'P2' ? '#F97316' : '#1C1D21');
+      return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="width:28px;height:28px;border-radius:50%;background:${bg};color:#FFFFFF;border:2px solid #FFFFFF;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:10px;box-shadow:0 2px 8px rgba(0,0,0,0.35);">${priority}</div>`,
+        iconSize: [28, 28], iconAnchor: [14, 14],
+      });
+    }
+
+    function switchView(viewId) {
+      document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
+      const el = document.getElementById(`view-${viewId}`);
+      if (el) el.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      const btn = document.querySelector(`.nav-item[data-view="${viewId}"]`);
+      if (btn) {
+        btn.classList.add('active');
+        document.getElementById('page-title').textContent = btn.textContent.trim();
+      }
+
+      if (viewId.startsWith('disp-')) loadAllDispatcherData();
+      if (viewId === 'disp-map') initFullMap();
+      if (viewId === 'disp-routing') initRouteMap();
+      if (viewId === 'disp-diagnostics') loadStorageArchitecture();
+      if (viewId === 'cit-reports') loadCitizenReports();
+      if (viewId === 'cit-profile') {
+        document.getElementById('cit-profile-body').innerHTML = `
+          <div><strong>Name:</strong> ${currentUser.name}</div>
+          <div><strong>Email:</strong> ${currentUser.email}</div>
+          <div><strong>Role:</strong> ${currentUser.role}</div>
+        `;
+      }
+      if (viewId.startsWith('hosp-')) loadHospitalPortalData();
+      if (viewId.startsWith('op-')) loadOperatorPortalData();
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // DISPATCHER PORTAL + REBUILT METROPOLITAN GIS MAP
+    // =========================================================================
+    function initDashMap() {
+      if (!dashMap) {
+        dashMap = L.map('dash-map', { maxBounds: METRO_BOUNDS.pad(0.1) }).setView([15.358, 75.125], 13);
+        qgisTileLayer().addTo(dashMap);
+        addLocalityLabels(dashMap);
+        layers.dash.hospitals.addTo(dashMap);
+        layers.dash.ambulances.addTo(dashMap);
+        layers.dash.incidents.addTo(dashMap);
+      }
+      setTimeout(() => dashMap.invalidateSize(), 80);
+    }
+
+    function initFullMap() {
+      if (!fullMap) {
+        fullMap = L.map('full-map', { maxBounds: METRO_BOUNDS.pad(0.1) }).setView([15.358, 75.125], 13);
+        fullBasemapLayer = qgisTileLayer().addTo(fullMap);
+        addLocalityLabels(fullMap);
+        layers.full.hospitals.addTo(fullMap);
+        layers.full.ambulances.addTo(fullMap);
+        layers.full.incidents.addTo(fullMap);
+        let bboxDebounce = null;
+        fullMap.on('moveend zoomend', () => {
+          if (bboxDebounce) clearTimeout(bboxDebounce);
+          bboxDebounce = setTimeout(() => {
+            if (document.getElementById('chk-bbox-roads')?.checked) loadBboxRoads();
+          }, 180);
+        });
+      }
+      setTimeout(() => { fullMap.invalidateSize(); }, 80);
+    }
+
+    function initRouteMap() {
+      if (!routeMap) {
+        routeMap = L.map('route-map', { maxBounds: METRO_BOUNDS.pad(0.1) }).setView([15.358, 75.125], 13);
+        qgisTileLayer().addTo(routeMap);
+        addLocalityLabels(routeMap);
+        layers.route.addTo(routeMap);
+      }
+      setTimeout(() => routeMap.invalidateSize(), 80);
+    }
+
+    function switchBasemap(type) {
+      if (!fullMap) return;
+      if (fullBasemapLayer) fullMap.removeLayer(fullBasemapLayer);
+      fullBasemapLayer = (type === 'qgis' ? qgisTileLayer() : osmTileLayer()).addTo(fullMap);
+      fullBasemapLayer.bringToBack();
+    }
+
+    function fitMetro(m) { if (m) m.fitBounds(METRO_BOUNDS, { padding: [20, 20] }); }
+
+    async function loadBboxRoads() {
+      if (!fullMap) return;
+      const b = fullMap.getBounds();
+      const z = fullMap.getZoom();
+      try {
+        const fc = await apiFetch(`/api/v1/gis/roads-bbox?min_lon=${b.getWest()}&min_lat=${b.getSouth()}&max_lon=${b.getEast()}&max_lat=${b.getNorth()}&zoom=${z}`);
+        if (bboxRoadsLayer) fullMap.removeLayer(bboxRoadsLayer);
+        bboxRoadsLayer = L.geoJSON(fc, {
+          style: (f) => {
+            const hw = f.properties.highway;
+            if (f.properties.is_blocked) return { color: '#EF4444', weight: 4, dashArray: '4,4' };
+            if (f.properties.is_emergency_corridor) return { color: '#16A34A', weight: 4 };
+            if (hw === 'trunk' || hw === 'trunk_link') return { color: '#EA580C', weight: 3.5, opacity: 0.85 };
+            if (hw === 'primary' || hw === 'primary_link') return { color: '#1C1D21', weight: 2.5, opacity: 0.75 };
+            if (hw === 'secondary') return { color: '#475569', weight: 2, opacity: 0.65 };
+            return { color: '#94A3B8', weight: 1.2, opacity: 0.55 };
+          },
+          onEachFeature: (f, l) => l.bindPopup(`<b>${f.properties.name}</b><br>Class: ${f.properties.highway}<br>One-Way: ${f.properties.is_oneway ? 'Yes' : 'No'}`),
+        }).addTo(fullMap);
+      } catch (e) { console.warn(e); }
+    }
+
+    function toggleBboxRoads(checked) {
+      if (!checked && bboxRoadsLayer && fullMap) { fullMap.removeLayer(bboxRoadsLayer); bboxRoadsLayer = null; }
+      else if (checked) loadBboxRoads();
+    }
+
+    function toggleMapLayer(name, checked) {
+      if (!fullMap) return;
+      if (checked) layers.full[name].addTo(fullMap);
+      else fullMap.removeLayer(layers.full[name]);
+    }
+
+    async function toggleRoadOverlay(filterType, checked) {
+      if (!fullMap) return;
+      if (layers.full.roads[filterType]) { fullMap.removeLayer(layers.full.roads[filterType]); delete layers.full.roads[filterType]; }
+      if (!checked) return;
+      const fc = await apiFetch(`/api/v1/gis/roads-overlay?filter_type=${filterType}`);
+      const cMap = { congested: '#EF4444', corridors: '#16A34A', oneway: '#8B5CF6' };
+      layers.full.roads[filterType] = L.geoJSON(fc, { style: { color: cMap[filterType] || '#1C1D21', weight: 3.5, opacity: 0.9 } }).addTo(fullMap);
+    }
+
+    function searchMapEntity(q) {
+      if (!q || q.length < 2 || !fullMap) return;
+      const low = q.toLowerCase();
+      const h = cachedHospitals.find(x => x.name.toLowerCase().includes(low));
+      if (h) { fullMap.setView([h.latitude, h.longitude], 15); return; }
+      const a = cachedAmbulances.find(x => x.call_sign.toLowerCase().includes(low));
+      if (a) { fullMap.setView([a.latitude, a.longitude], 15); }
+    }
+
+    async function loadAllDispatcherData() {
+      initDashMap();
+      const [db, hosps, ambs, incs, traf] = await Promise.all([
+        apiFetch('/api/v1/system/database-info'),
+        apiFetch('/api/v1/hospitals'),
+        apiFetch('/api/v1/ambulances'),
+        apiFetch('/api/v1/incidents'),
+        apiFetch('/api/v1/traffic/summary'),
+      ]);
+      cachedHospitals = hosps; cachedAmbulances = ambs; cachedIncidents = incs;
+
+      const active = incs.filter(i => !['COMPLETED', 'CANCELLED'].includes(i.status));
+      document.getElementById('kpi-active-inc').textContent = active.length;
+      document.getElementById('kpi-p1-sub').textContent = `P1 Critical: ${active.filter(i => i.priority === 'P1').length}`;
+      document.getElementById('kpi-avail-amb').textContent = ambs.filter(a => a.status === 'AVAILABLE').length;
+      document.getElementById('kpi-amb-sub').textContent = `Total fleet: ${ambs.length} units`;
+      document.getElementById('kpi-icu-beds').textContent = hosps.reduce((s, h) => s + (h.icu_available || 0), 0);
+      document.getElementById('kpi-road-km').textContent = `${db.verified_counts.total_road_km} km`;
+      document.getElementById('kpi-road-sub').textContent = `${db.verified_counts.road_edges.toLocaleString()} edges · ${db.verified_counts.road_nodes.toLocaleString()} nodes`;
+
+      // Render labelled markers on both dash & full map
+      ['dash', 'full'].forEach(k => {
+        layers[k].hospitals.clearLayers(); layers[k].ambulances.clearLayers(); layers[k].incidents.clearLayers();
+        hosps.forEach(h => {
+          L.marker([h.latitude, h.longitude], { icon: hospitalIcon(h.trauma_level) })
+            .bindTooltip(h.name, { direction: 'top' })
+            .bindPopup(`<b>${h.name}</b><br>${h.city} · Trauma T${h.trauma_level}<br>ICU: ${h.icu_available} / ${h.total_beds} beds<br>Status: ${h.service_status || 'OPERATIONAL'}`)
+            .addTo(layers[k].hospitals);
+        });
+        ambs.forEach(a => {
+          L.marker([a.latitude, a.longitude], { icon: ambulanceIcon(a.status) })
+            .bindTooltip(`${a.call_sign} (${a.status})`, { direction: 'top' })
+            .bindPopup(`<b>${a.call_sign}</b> (${a.vehicle_type})<br>Status: ${a.status}<br>Reg: ${a.registration_number || 'N/A'}`)
+            .addTo(layers[k].ambulances);
+        });
+        active.forEach(i => {
+          L.marker([i.latitude, i.longitude], { icon: emergencyIcon(i.priority) })
+            .bindTooltip(`${i.incident_type} (${i.priority})`, { direction: 'top' })
+            .bindPopup(`<b>${i.incident_type}</b> (${i.priority})<br>Status: ${i.status}<br>Unit: ${i.ambulance_callsign || 'Pending'}<br>Hospital: ${i.hospital_name || 'Pending'}`)
+            .addTo(layers[k].incidents);
+        });
+      });
+
+      const incHtml = (i) => `
+        <div class="p-3.5 rounded-xl border border-[#E6E8EC] bg-[#FAFAFB] flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div class="font-bold">${i.incident_type} <span class="font-mono text-caption px-1.5 py-0.5 rounded ${i.priority==='P1'?'bg-[#EF4444] text-white':'bg-[#1C1D21] text-[#B8F432]'}">${i.priority}</span></div>
+            <div class="text-caption text-[#6E737D]">${i.incident_code || i.id} · <b>${i.status}</b> · ${i.ambulance_callsign || 'Unassigned'} → ${i.hospital_name || 'Pending'}</div>
+          </div>
+          <div class="flex gap-1.5">
+            ${['RECEIVED','REPORTED','QUEUED'].includes(i.status) ? `<button onclick="switchView('disp-emergencies'); analyzeAndShowDispatchPanel('${i.id}')" class="px-3 py-1.5 rounded-lg bg-[#1C1D21] text-[#B8F432]">Rank &amp; Assign</button>` : ''}
+            ${i.status === 'PENDING_VERIFICATION' ? `<button onclick="dispatcherVerifyInc('${i.id}','APPROVE')" class="px-3 py-1.5 rounded-lg bg-[#B8F432] text-[#1C1D21]">Verify &amp; Close</button>` : ''}
+            ${!['COMPLETED','CANCELLED','RECEIVED','REPORTED','QUEUED','PENDING_VERIFICATION'].includes(i.status) ? `<button onclick="dispCompleteInc('${i.id}')" class="px-3 py-1.5 rounded-lg border border-[#E6E8EC]">Force Complete</button>` : ''}
+          </div>
+        </div>`;
+      document.getElementById('dash-queue').innerHTML = active.length ? active.map(incHtml).join('') : '<div class="text-[#6E737D] text-center py-6">No active emergencies.</div>';
+      document.getElementById('disp-emergencies-list').innerHTML = incs.map(i => `<div class="py-2">${incHtml(i)}</div>`).join('');
+
+      document.getElementById('disp-fleet-list').innerHTML = ambs.map(a => `
+        <div class="py-3.5 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div class="font-bold">${a.call_sign} <span class="font-mono text-[10px] text-[#6E737D]">${a.registration_number || ''}</span></div>
+            <div class="text-caption text-[#6E737D]">${a.vehicle_type} · ${a.latitude.toFixed(4)}, ${a.longitude.toFixed(4)} · Status: <b>${a.status}</b></div>
+          </div>
+          <button onclick='open3DModal(${JSON.stringify(a).replace(/'/g,"")})' class="px-3.5 py-1.5 rounded-xl bg-[#1C1D21] text-[#B8F432] font-semibold">3D Inspect</button>
+        </div>
+      `).join('');
+
+      document.getElementById('disp-hospitals-grid').innerHTML = hosps.map(h => `
+        <div class="bg-white rounded-2xl border border-[#E6E8EC] p-4 space-y-1">
+          <div class="font-bold">${h.name}</div>
+          <div class="text-caption text-[#6E737D]">${h.city} · Trauma T${h.trauma_level} · ${h.latitude.toFixed(4)}, ${h.longitude.toFixed(4)}</div>
+          <div class="pt-2 font-mono text-[11px]">ICU: <b>${h.icu_available}</b> / ${h.total_beds} beds</div>
+        </div>
+      `).join('');
+
+      // Traffic stats
+      const s = traf.stats;
+      document.getElementById('traffic-stats-grid').innerHTML = `
+        <div class="bg-white rounded-2xl border border-[#E6E8EC] p-4"><div class="text-[#6E737D]">Free-Flow</div><div class="text-2xl font-bold mt-1">${s.free_flow_roads.toLocaleString()}</div></div>
+        <div class="bg-white rounded-2xl border border-[#E6E8EC] p-4"><div class="text-[#6E737D]">Moderate</div><div class="text-2xl font-bold mt-1">${s.moderate_roads.toLocaleString()}</div></div>
+        <div class="bg-white rounded-2xl border border-[#E6E8EC] p-4"><div class="text-[#6E737D]">Congested</div><div class="text-2xl font-bold mt-1 text-[#EF4444]">${s.congested_roads.toLocaleString()}</div></div>
+        <div class="bg-white rounded-2xl border border-[#E6E8EC] p-4"><div class="text-[#6E737D]">Closed</div><div class="text-2xl font-bold mt-1">${s.closed_roads}</div></div>
+        <div class="bg-white rounded-2xl border border-[#E6E8EC] p-4"><div class="text-[#6E737D]">Corridors</div><div class="text-2xl font-bold mt-1 text-[#16A34A]">${s.emergency_corridors.toLocaleString()}</div></div>
+      `;
+      if (typeof syncActiveRoutesFromCache === 'function') syncActiveRoutesFromCache();
+    }
+
+    async function dispCompleteInc(id) {
+      await apiFetch(`/api/v1/incidents/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'COMPLETED' }) });
+      loadAllDispatcherData();
+    }
+
+    let lastComparedEdgeIds = [];
+
+    async function runRouteComparison() {
+      const [slat, slon, elat, elon] = document.getElementById('rt-preset').value.split(',').map(Number);
+      const algo = document.getElementById('rt-algo').value;
+      const vh = parseFloat(document.getElementById('rt-height')?.value || '2.4');
+      const vw = parseFloat(document.getElementById('rt-width')?.value || '2.2');
+      const res = await apiFetch('/api/v1/routing/compare', {
+        method: 'POST',
+        body: JSON.stringify({ start_lat: slat, start_lon: slon, end_lat: elat, end_lon: elon, algorithm: algo, vehicle_height: vh, vehicle_width: vw }),
+      });
+      layers.route.clearLayers();
+      if (res.normal_vehicle) L.polyline(res.normal_vehicle.coordinates, { color: '#6E737D', weight: 4, dashArray: '6,6' }).addTo(layers.route);
+      if (res.ambulance) {
+        activeRouteCoords = res.ambulance.coordinates;
+        lastComparedEdgeIds = res.ambulance.edge_ids || [];
+        const line = L.polyline(activeRouteCoords, { color: '#1C1D21', weight: 5 }).addTo(layers.route);
+        routeMap.fitBounds(line.getBounds(), { padding: [30, 30] });
+      }
+      document.getElementById('rt-results').innerHTML = `
+        <div class="text-caption font-mono text-[#6E737D]">KNN Nodes: ${res.start_node} → ${res.end_node} · Clearance: ${vh}m × ${vw}m</div>
+        <div class="p-3 rounded-xl bg-[#F4F5F7]">
+          <div class="font-bold">Ordinary Vehicle (Strict One-Way)</div>
+          <div class="text-small">${res.normal_vehicle ? `${res.normal_vehicle.total_distance_km} km · ${Math.round(res.normal_vehicle.total_duration_seconds)}s (${res.normal_vehicle.edge_count} edges)` : 'No feasible path under clearance'}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#1C1D21] text-white">
+          <div class="font-bold text-[#B8F432]">Ambulance (Emergency Exemptions)</div>
+          <div class="text-small">${res.ambulance ? `${res.ambulance.total_distance_km} km · ${Math.round(res.ambulance.total_duration_seconds)}s (${res.ambulance.edge_count} edges · ${res.ambulance.contraflow_edges_used} contraflow)` : 'No feasible path under clearance'}</div>
+          ${res.ambulance?.road_summary ? `<div class="text-caption text-white/60 mt-1">Via: ${res.ambulance.road_summary.slice(0, 4).join(' → ')}</div>` : ''}
+        </div>
+      `;
+    }
+
+    async function blockMidRouteAndReroute() {
+      if (!lastComparedEdgeIds.length) return alert('Run a route comparison first.');
+      const midRoadId = lastComparedEdgeIds[Math.floor(lastComparedEdgeIds.length / 2)];
+      await apiFetch('/api/v1/traffic/road-closure', { method: 'POST', body: JSON.stringify({ road_id: midRoadId, is_blocked: true }) });
+      await runRouteComparison();
+    }
+
+    function animateDispatcherRoute() {
+      if (!activeRouteCoords.length || !routeMap) return alert('Run a route comparison first.');
+      if (animTimer) clearInterval(animTimer);
+      let idx = 0;
+      const marker = L.marker(activeRouteCoords[0], { icon: ambulanceIcon('EN_ROUTE', 0) }).addTo(layers.route);
+      animTimer = setInterval(() => {
+        idx += 2;
+        if (idx >= activeRouteCoords.length) { clearInterval(animTimer); return; }
+        const [lat1, lon1] = activeRouteCoords[Math.max(0, idx - 2)];
+        const [lat2, lon2] = activeRouteCoords[idx];
+        const bearing = (Math.atan2(lon2 - lon1, lat2 - lat1) * 180 / Math.PI + 360) % 360;
+        marker.setLatLng([lat2, lon2]);
+        marker.setIcon(ambulanceIcon('EN_ROUTE', Math.round(bearing)));
+      }, 120);
+    }
+
+    async function setTrafficLevel(level) {
+      await apiFetch('/api/v1/traffic/simulate', { method: 'POST', body: JSON.stringify({ level }) });
+      loadAllDispatcherData();
+    }
+    async function toggleGlobalCorridor(active) {
+      await apiFetch('/api/v1/traffic/toggle-emergency-corridor', { method: 'POST', body: JSON.stringify({ active }) });
+      loadAllDispatcherData();
+    }
+    async function resetTrafficSim() {
+      await apiFetch('/api/v1/traffic/reset', { method: 'POST' });
+      loadAllDispatcherData();
+    }
+
+    async function loadStorageArchitecture() {
+      const arch = await apiFetch('/api/v1/system/storage-architecture');
+      document.getElementById('storage-inventory-table').innerHTML = `
+        <table class="w-full text-left border-collapse">
+          <thead><tr class="border-b border-[#E6E8EC] text-[#6E737D]"><th class="py-2">Table</th><th>Purpose</th><th>Spatial Column</th><th>Category</th><th>Rows</th></tr></thead>
+          <tbody>
+            ${arch.inventory.map(r => `
+              <tr class="border-b border-[#E6E8EC]/60">
+                <td class="py-2 font-mono font-semibold">${r.table}</td>
+                <td>${r.purpose}</td>
+                <td class="font-mono text-[11px]">${r.spatial_column}</td>
+                <td><span class="px-2 py-0.5 rounded bg-[#F4F5F7] font-mono text-[10px]">${r.category}</span></td>
+                <td class="font-mono font-bold">${r.row_count.toLocaleString()}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    // =========================================================================
+    // THREE.JS 3D AMBULANCE INSPECTION (Interactive Rotation & Zoom)
+    // =========================================================================
+    let threeScene, threeCamera, threeRenderer, ambGroup, isDragging = false, prevX = 0;
+
+    function open3DModal(amb) {
+      document.getElementById('modal-3d').classList.remove('hidden');
+      document.getElementById('modal-3d-title').textContent = `${amb.call_sign} — 3D Inspection`;
+      document.getElementById('modal-3d-details').innerHTML = `
+        <div class="flex justify-between py-1.5 border-b border-[#E6E8EC]"><span class="text-[#6E737D]">Ambulance ID</span><span class="font-mono font-bold">${amb.id}</span></div>
+        <div class="flex justify-between py-1.5 border-b border-[#E6E8EC]"><span class="text-[#6E737D]">Registration</span><span class="font-mono">${amb.registration_number || 'N/A'}</span></div>
+        <div class="flex justify-between py-1.5 border-b border-[#E6E8EC]"><span class="text-[#6E737D]">Type</span><span class="font-bold">${amb.vehicle_type}</span></div>
+        <div class="flex justify-between py-1.5 border-b border-[#E6E8EC]"><span class="text-[#6E737D]">Status</span><span class="font-mono font-bold">${amb.status}</span></div>
+        <div class="flex justify-between py-1.5 border-b border-[#E6E8EC]"><span class="text-[#6E737D]">Coordinates</span><span class="font-mono">${amb.latitude.toFixed(5)}, ${amb.longitude.toFixed(5)}</span></div>
+        <div class="flex justify-between py-1.5 border-b border-[#E6E8EC]"><span class="text-[#6E737D]">Clearance (H×W×Wt)</span><span class="font-mono">${amb.height_meters}m × ${amb.width_meters}m × ${amb.weight_tons}t</span></div>
+        <div class="flex justify-between py-1.5"><span class="text-[#6E737D]">Capabilities</span><span class="font-mono text-[10px]">${Array.isArray(amb.capabilities) ? amb.capabilities.join(', ') : 'ALS/BLS'}</span></div>
+      `;
+      initThreeScene();
+      lucide.createIcons();
+    }
+
+    function close3DModal() { document.getElementById('modal-3d').classList.add('hidden'); }
+
+    function initThreeScene() {
+      const container = document.getElementById('three-canvas-container');
+      if (threeRenderer) return;
+      threeScene = new THREE.Scene();
+      threeScene.background = new THREE.Color(0x1c1d21);
+      threeCamera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+      threeCamera.position.set(5, 3, 5);
+      threeCamera.lookAt(0, 0.8, 0);
+
+      threeRenderer = new THREE.WebGLRenderer({ antialias: true });
+      threeRenderer.setSize(container.clientWidth, container.clientHeight);
+      container.innerHTML = '';
+      container.appendChild(threeRenderer.domElement);
+
+      threeScene.add(new THREE.AmbientLight(0xffffff, 0.7));
+      const dir = new THREE.DirectionalLight(0xffffff, 0.9);
+      dir.position.set(5, 10, 7);
+      threeScene.add(dir);
+
+      ambGroup = new THREE.Group();
+      // Main ambulance box
+      const body = new THREE.Mesh(new THREE.BoxGeometry(3.4, 1.5, 1.6), new THREE.MeshStandardMaterial({ color: 0xf8fafc }));
+      body.position.set(-0.3, 1.0, 0);
+      ambGroup.add(body);
+      // Cab
+      const cab = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 1.55), new THREE.MeshStandardMaterial({ color: 0xe2e8f0 }));
+      cab.position.set(1.9, 0.8, 0);
+      ambGroup.add(cab);
+      // Lime reflective stripe
+      const stripe = new THREE.Mesh(new THREE.BoxGeometry(3.42, 0.22, 1.62), new THREE.MeshStandardMaterial({ color: 0xb8f432 }));
+      stripe.position.set(-0.3, 0.85, 0);
+      ambGroup.add(stripe);
+      // Emergency lightbar
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.18, 1.1), new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xef4444, emissiveIntensity: 0.6 }));
+      bar.position.set(1.5, 1.85, 0);
+      ambGroup.add(bar);
+      // Wheels
+      const wheelGeo = new THREE.CylinderGeometry(0.35, 0.35, 0.25, 20);
+      const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111215 });
+      [[-1.3, 0.35, 0.8], [-1.3, 0.35, -0.8], [1.6, 0.35, 0.8], [1.6, 0.35, -0.8]].forEach(([x, y, z]) => {
+        const w = new THREE.Mesh(wheelGeo, wheelMat);
+        w.rotation.x = Math.PI / 2;
+        w.position.set(x, y, z);
+        ambGroup.add(w);
+      });
+      threeScene.add(ambGroup);
+
+      container.addEventListener('mousedown', (e) => { isDragging = true; prevX = e.clientX; });
+      window.addEventListener('mouseup', () => { isDragging = false; });
+      window.addEventListener('mousemove', (e) => {
+        if (!isDragging || !ambGroup) return;
+        ambGroup.rotation.y += (e.clientX - prevX) * 0.01;
+        prevX = e.clientX;
+      });
+      container.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        threeCamera.position.multiplyScalar(e.deltaY > 0 ? 1.08 : 0.92);
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        if (!isDragging && ambGroup) ambGroup.rotation.y += 0.004;
+        threeRenderer.render(threeScene, threeCamera);
+      }
+      animate();
+    }
+
+    function set3DCameraView(v) {
+      if (!threeCamera) return;
+      if (v === 'front') threeCamera.position.set(6, 1.5, 0);
+      else if (v === 'side') threeCamera.position.set(0, 1.5, 6);
+      else threeCamera.position.set(5, 3, 5);
+      threeCamera.lookAt(0, 0.8, 0);
+    }
+
+    // =========================================================================
+    // CITIZEN PORTAL FUNCTIONS
+    // =========================================================================
+    function citizenDetectGPS() {
+      if (!navigator.geolocation) return alert('GPS not available');
+      navigator.geolocation.getCurrentPosition(p => setCitLoc(p.coords.latitude, p.coords.longitude), e => alert(e.message));
+    }
+    function setCitLoc(lat, lon) {
+      document.getElementById('cit-lat').value = lat.toFixed(6);
+      document.getElementById('cit-lon').value = lon.toFixed(6);
+    }
+    async function citizenSubmitEmergency(e) {
+      e.preventDefault();
+      const res = await apiFetch('/api/v1/incidents/create', {
+        method: 'POST',
+        body: JSON.stringify({
+          incident_type: document.getElementById('cit-type').value,
+          people_affected: parseInt(document.getElementById('cit-people').value, 10),
+          caller_phone: document.getElementById('cit-phone').value,
+          caller_name: currentUser.name,
+          latitude: parseFloat(document.getElementById('cit-lat').value),
+          longitude: parseFloat(document.getElementById('cit-lon').value),
+          description: document.getElementById('cit-desc').value,
+          location_source: 'CITIZEN_PORTAL',
+        }),
+      });
+      const box = document.getElementById('cit-submit-msg');
+      box.classList.remove('hidden');
+      box.innerHTML = `<b>Submitted!</b> Reference ID: <span class="font-mono">${res.incident_id}</span> (${res.priority}) · Status: <b>${res.status}</b>. <button onclick="trackCitizenIncident('${res.incident_id}')" class="ml-2 underline font-bold">Track Live →</button>`;
+    }
+
+    async function loadCitizenReports() {
+      const list = await apiFetch('/api/v1/citizen/my-reports');
+      document.getElementById('cit-reports-list').innerHTML = list.length ? list.map(r => `
+        <div class="py-3 flex items-center justify-between">
+          <div>
+            <div class="font-bold">${r.incident_type} <span class="font-mono text-[10px]">(${r.id})</span></div>
+            <div class="text-caption text-[#6E737D]">Status: <b>${r.status}</b> · Unit: ${r.ambulance_callsign || 'Assigning...'} · Hospital: ${r.hospital_name || '—'}</div>
+          </div>
+          <button onclick="trackCitizenIncident('${r.id}')" class="px-3 py-1.5 rounded-lg bg-[#1C1D21] text-[#B8F432] font-semibold">Track</button>
+        </div>
+      `).join('') : '<div class="py-6 text-center text-[#6E737D]">You have not submitted any emergency reports yet.</div>';
+    }
+
+    let citRouteCoords = [];
+    async function trackCitizenIncident(incId) {
+      window._citTrackedIncId = incId;
+      switchView('cit-track');
+      if (!citMap) {
+        citMap = L.map('cit-map').setView([15.38, 75.10], 13);
+        qgisTileLayer().addTo(citMap);
+        addLocalityLabels(citMap);
+        layers.cit.addTo(citMap);
+      }
+      setTimeout(() => citMap.invalidateSize(), 80);
+      const data = await apiFetch(`/api/v1/citizen/track/${incId}`);
+      const inc = data.incident;
+      document.getElementById('cit-track-header').textContent = `Tracking ${inc.id} · ${inc.incident_type} · Status: ${inc.status}`;
+      layers.cit.clearLayers();
+      L.marker([inc.latitude, inc.longitude], { icon: emergencyIcon(inc.priority) }).bindPopup('Your Reported Location').addTo(layers.cit);
+      if (inc.amb_lat) L.marker([inc.amb_lat, inc.amb_lon], { icon: ambulanceIcon(inc.ambulance_status) }).bindPopup(`Assigned: ${inc.ambulance_callsign}`).addTo(layers.cit);
+      if (data.live_route) {
+        citRouteCoords = data.live_route.coordinates;
+        const poly = L.polyline(citRouteCoords, { color: '#1C1D21', weight: 4 }).addTo(layers.cit);
+        citMap.fitBounds(poly.getBounds(), { padding: [40, 40] });
+        document.getElementById('btn-cit-sim-anim').classList.remove('hidden');
+      } else {
+        citMap.setView([inc.latitude, inc.longitude], 14);
+      }
+      document.getElementById('cit-track-timeline').innerHTML = `
+        <div class="font-bold">Assigned Unit: ${inc.ambulance_callsign || 'Pending'}</div>
+        <div class="text-[#6E737D]">ETA: <b>${data.live_route ? data.live_route.eta_minutes + ' min' : 'Calculating'}</b></div>
+        <div class="pt-2 border-t border-[#E6E8EC] space-y-2">
+          ${data.timeline.map(t => `<div><b>${t.new_status}</b><div class="text-caption text-[#6E737D]">${t.remarks}</div></div>`).join('')}
+        </div>
+      `;
+    }
+
+    function animateCitizenAmbulance() {
+      if (!citRouteCoords.length || !citMap) return;
+      let idx = 0;
+      const m = L.marker(citRouteCoords[0], { icon: ambulanceIcon('EN_ROUTE', 0) }).addTo(layers.cit);
+      const t = setInterval(() => {
+        idx += 2;
+        if (idx >= citRouteCoords.length) { clearInterval(t); return; }
+        m.setLatLng(citRouteCoords[idx]);
+      }, 120);
+    }
+
+    // =========================================================================
+    // HOSPITAL STAFF PORTAL + CSV BULK IMPORT
+    // =========================================================================
+    async function loadHospitalPortalData() {
+      const [fac, inc, hist, csvHist] = await Promise.all([
+        apiFetch('/api/v1/hospital/my-facility'),
+        apiFetch('/api/v1/hospital/incoming'),
+        apiFetch('/api/v1/hospital/capacity-history'),
+        apiFetch('/api/v1/hospital/csv/history'),
+      ]);
+      document.getElementById('hosp-my-card').innerHTML = `
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="text-lg font-bold">${fac.name}</h3>
+            <p class="text-[#6E737D] mt-0.5">${fac.city} · Registered Coords: ${fac.latitude.toFixed(5)}, ${fac.longitude.toFixed(5)} · Trauma Level ${fac.trauma_level}</p>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-[#B8F432] text-[#1C1D21] font-mono font-bold">${fac.service_status}</span>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-5">
+          <div class="p-4 rounded-xl bg-[#F4F5F7]"><div class="text-[#6E737D]">Total Beds</div><div class="text-2xl font-bold mt-1">${fac.total_beds}</div></div>
+          <div class="p-4 rounded-xl bg-[#F4F5F7]"><div class="text-[#6E737D]">ICU Available</div><div class="text-2xl font-bold mt-1">${fac.icu_available}</div></div>
+          <div class="p-4 rounded-xl bg-[#F4F5F7]"><div class="text-[#6E737D]">Trauma Beds</div><div class="text-2xl font-bold mt-1">${fac.trauma_beds_available}</div></div>
+          <div class="p-4 rounded-xl bg-[#F4F5F7]"><div class="text-[#6E737D]">ED Capacity</div><div class="text-2xl font-bold mt-1">${fac.emergency_dept_capacity}</div></div>
+        </div>
+      `;
+      document.getElementById('hc-beds').value = fac.total_beds;
+      document.getElementById('hc-icu').value = fac.icu_available;
+      document.getElementById('hc-trauma').value = fac.trauma_beds_available;
+      document.getElementById('hc-ed').value = fac.emergency_dept_capacity;
+      document.getElementById('hc-status').value = fac.service_status || 'OPERATIONAL';
+      document.getElementById('hc-notes').value = fac.service_notes || '';
+
+      document.getElementById('hosp-incoming-list').innerHTML = inc.length ? inc.map(i => `
+        <div class="py-3 flex items-center justify-between">
+          <div><b>${i.incident_type} (${i.priority})</b><div class="text-[#6E737D]">Unit: ${i.call_sign || 'Pending'} · Status: ${i.status}</div></div>
+          <button onclick="confirmHospitalArrival('${i.id}')" class="px-3 py-1.5 rounded-lg bg-[#1C1D21] text-[#B8F432] font-semibold">Confirm Arrival &amp; Admit</button>
+        </div>
+      `).join('') : '<div class="py-6 text-center text-[#6E737D]">No incoming ambulances currently en route to your hospital.</div>';
+
+      document.getElementById('hosp-history-list').innerHTML = hist.length ? hist.map(h => `
+        <div class="py-2.5 flex justify-between">
+          <div><b>ICU: ${h.icu_available} / Beds: ${h.total_beds}</b> · ${h.service_status}<div class="text-[#6E737D]">${h.remarks}</div></div>
+          <div class="text-right font-mono text-[10px] text-[#6E737D]">${h.changed_by}</div>
+        </div>
+      `).join('') : '<div class="py-6 text-center text-[#6E737D]">No capacity updates recorded yet.</div>';
+
+      document.getElementById('csv-history-list').innerHTML = csvHist.length ? csvHist.map(c => `
+        <div class="py-2.5 flex justify-between">
+          <div><b>${c.original_filename}</b> (${c.import_mode}) · <span class="font-mono">${c.status}</span><div class="text-[#6E737D]">Total: ${c.total_rows} · Success: ${c.successful_rows} · Failed: ${c.failed_rows}</div></div>
+          <div class="font-mono text-[10px] text-[#6E737D]">${c.import_id}</div>
+        </div>
+      `).join('') : '<div class="py-4 text-center text-[#6E737D]">No CSV imports yet.</div>';
+    }
+
+    async function saveHospitalCapacity(e) {
+      e.preventDefault();
+      await apiFetch('/api/v1/hospital/my-facility', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          total_beds: parseInt(document.getElementById('hc-beds').value, 10),
+          icu_available: parseInt(document.getElementById('hc-icu').value, 10),
+          trauma_beds_available: parseInt(document.getElementById('hc-trauma').value, 10),
+          emergency_dept_capacity: parseInt(document.getElementById('hc-ed').value, 10),
+          service_status: document.getElementById('hc-status').value,
+          service_notes: document.getElementById('hc-notes').value,
+        }),
+      });
+      alert('Capacity updated and logged.');
+      loadHospitalPortalData();
+    }
+
+    async function confirmHospitalArrival(incId) {
+      await apiFetch(`/api/v1/hospital/confirm-arrival/${incId}`, { method: 'POST', body: JSON.stringify({ remarks: 'Admitted via Hospital Staff Portal' }) });
+      loadHospitalPortalData();
+    }
+
+    async function downloadCsvTemplate(e) {
+      e.preventDefault();
+      const res = await fetch('/api/v1/hospital/csv/template', { headers: { Authorization: `Bearer ${authToken}` } });
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'iers_hospital_template.csv'; a.click();
+    }
+
+    function handleCsvFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      uploadedCsvName = file.name;
+      const reader = new FileReader();
+      reader.onload = () => { uploadedCsvText = reader.result; };
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    async function previewCsvImport() {
+      if (!uploadedCsvText) return alert('Select a CSV file first.');
+      const prev = await apiFetch('/api/v1/hospital/csv/preview', { method: 'POST', body: JSON.stringify({ csv_text: uploadedCsvText }) });
+      const box = document.getElementById('csv-preview-box');
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <div><b>Validation Summary:</b> Total: ${prev.total_rows} · Valid: <b class="text-[#16A34A]">${prev.valid_count}</b> · Invalid: <b class="text-[#EF4444]">${prev.invalid_count}</b> · Duplicates: ${prev.duplicate_count}</div>
+        ${prev.invalid_rows.length ? `<div class="text-[#EF4444]">${prev.invalid_rows.map(r => `Row ${r.row_number}: ${r.errors.join('; ')}`).join('<br>')}</div>` : '<div class="text-[#16A34A]">All rows valid and ready for transactional import.</div>'}
+      `;
+      document.getElementById('btn-csv-commit').disabled = prev.invalid_count > 0 || prev.valid_count === 0;
+    }
+
+    async function commitCsvImport() {
+      const res = await apiFetch('/api/v1/hospital/csv/commit', {
+        method: 'POST',
+        body: JSON.stringify({ csv_text: uploadedCsvText, filename: uploadedCsvName, import_mode: document.getElementById('csv-mode').value }),
+      });
+      alert(`Import ${res.import_id}: ${res.status} (${res.successful_rows} rows updated)`);
+      document.getElementById('btn-csv-commit').disabled = true;
+      loadHospitalPortalData();
+    }
+
+    // =========================================================================
+    // DISPATCHER SPATIAL AMBULANCE RANKING & ASSIGNMENT + VERIFICATION
+    // =========================================================================
+    async function analyzeAndShowDispatchPanel(incId) {
+      const panel = document.getElementById('disp-ranking-panel');
+      panel.innerHTML = '<h3>Spatial Ambulance Ranking</h3><p class="text-small text-[#6E737D]">Running real pgRouting A* from all available ambulances...</p>';
+      try {
+        const res = await apiFetch(`/api/v1/workflow/analyze/${incId}`);
+        const topAmb = res.ranked_ambulances[0];
+        const topHosp = res.ranked_hospitals[0];
+        panel.innerHTML = `
+          <div class="flex items-center justify-between pb-3 border-b border-[#E6E8EC]">
+            <h3>Ranked Ambulances for ${res.incident.incident_type}</h3>
+            <span class="px-2.5 py-1 rounded-full bg-[#EF4444] text-white font-mono text-caption">${res.incident.priority}</span>
+          </div>
+          <div class="space-y-2 max-h-64 overflow-y-auto">
+            ${res.ranked_ambulances.slice(0, 6).map((a, idx) => `
+              <label class="flex items-center justify-between p-3 rounded-xl border ${idx===0?'border-[#1C1D21] bg-[#B8F432]/15':'border-[#E6E8EC] bg-[#FAFAFB]'} cursor-pointer">
+                <div class="flex items-center gap-2.5">
+                  <input type="radio" name="sel-amb" value="${a.ambulance_id}" ${idx===0?'checked':''} />
+                  <div>
+                    <div class="font-bold">#${a.rank} ${a.call_sign} (${a.vehicle_type}) ${idx===0?'<span class="text-caption px-1.5 py-0.5 rounded bg-[#B8F432] text-[#1C1D21]">BEST MATCH</span>':''}</div>
+                    <div class="text-caption text-[#6E737D]">${a.reason}</div>
+                  </div>
+                </div>
+                <span class="font-mono font-bold">${a.eta_seconds}s</span>
+              </label>
+            `).join('')}
+          </div>
+          <div class="pt-2 border-t border-[#E6E8EC] space-y-2">
+            <label class="block font-semibold">Recommended Hospital (by Road-Network ETA &amp; ICU Suitability)</label>
+            <select id="sel-hosp" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]">
+              ${res.ranked_hospitals.map(h => `<option value="${h.hospital_id}">#${h.rank} ${h.name} — ${h.eta_seconds}s · ${h.icu_available} ICU beds</option>`).join('')}
+            </select>
+            <input id="assign-override-reason" placeholder="Override reason (optional if selecting #1)" class="w-full px-3 py-2 rounded-xl border border-[#E6E8EC] bg-[#F4F5F7]" />
+            <button onclick="dispatcherConfirmAssign('${incId}')" class="w-full py-3 rounded-xl bg-[#1C1D21] text-[#B8F432]">
+              Assign Selected Ambulance → Hospital
+            </button>
+          </div>
+        `;
+      } catch (e) {
+        panel.innerHTML = `<div class="text-[#EF4444]">Error: ${e.message}</div>`;
+      }
+    }
+
+    async function dispatcherConfirmAssign(incId) {
+      const ambEl = document.querySelector('input[name="sel-amb"]:checked');
+      const hospId = document.getElementById('sel-hosp')?.value;
+      if (!ambEl || !hospId) return alert('Select an ambulance and hospital.');
+      try {
+        const res = await apiFetch(`/api/v1/workflow/assign/${incId}`, {
+          method: 'POST',
+          body: JSON.stringify({
+            ambulance_id: ambEl.value,
+            hospital_id: hospId,
+            override_reason: document.getElementById('assign-override-reason')?.value || '',
+          }),
+        });
+        alert(`Assigned! Dispatch ID: ${res.dispatch_id} · Leg 1 ETA: ${res.eta_seconds}s`);
+        loadAllDispatcherData();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function dispatcherVerifyInc(incId, decision) {
+      await apiFetch(`/api/v1/workflow/verify/${incId}`, { method: 'POST', body: JSON.stringify({ decision, notes: 'Verified by Dispatcher' }) });
+      loadAllDispatcherData();
+    }
+
+    // =========================================================================
+    // AMBULANCE OPERATOR PORTAL (LIVE GOOGLE-MAPS-STYLE TWO-LEG NAVIGATION)
+    // =========================================================================
+    let opMap = null, opLayer = L.layerGroup(), opNavAnimId = null;
+
+    function navArrowIcon(bearing = 0) {
+      return L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="transform:rotate(${bearing}deg);width:34px;height:34px;border-radius:50%;background:#1C1D21;border:3px solid #B8F432;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.45);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#B8F432"><polygon points="12,2 21,21 12,17 3,21"/></svg>
+        </div>`,
+        iconSize: [34, 34], iconAnchor: [17, 17],
+      });
+    }
+
+    let opNavState = null;
+
+    function _haversineM(a, b) {
+      const R = 6371000;
+      const toRad = d => d * Math.PI / 180;
+      const dLat = toRad(b[0] - a[0]), dLon = toRad(b[1] - a[1]);
+      const s = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.sin(dLon / 2) ** 2;
+      return 2 * R * Math.atan2(Math.sqrt(s), Math.sqrt(1 - s));
+    }
+
+    function _segBearing(a, b) {
+      const toRad = d => d * Math.PI / 180;
+      const dLon = toRad(b[1] - a[1]);
+      const y = Math.sin(dLon) * Math.cos(toRad(b[0]));
+      const x = Math.cos(toRad(a[0])) * Math.sin(toRad(b[0])) - Math.sin(toRad(a[0])) * Math.cos(toRad(b[0])) * Math.cos(dLon);
+      return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
+    }
+
+    function _turnArrowSvg(type) {
+      if (type === 'LEFT') return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19v-7a3 3 0 0 0-3-3H5"/><path d="M9 5L5 9l4 4"/></svg>';
+      if (type === 'RIGHT') return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19v-7a3 3 0 0 1 3-3h7"/><path d="M15 5l4 4-4 4"/></svg>';
+      if (type === 'U-TURN') return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19V9a4 4 0 0 1 8 0v6"/><path d="M13 11l4 4 4-4"/></svg>';
+      if (type === 'ARRIVAL') return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#B8F432" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+      return '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    }
+
+    function opNavTogglePause() {
+      if (!opNavState) return;
+      opNavState.paused = !opNavState.paused;
+      opNavState.lastNow = performance.now();
+      const b = document.getElementById('op-nav-pause-btn');
+      if (b) b.textContent = opNavState.paused ? 'Resume' : 'Pause';
+    }
+
+    function opNavSetSpeed(kmh) {
+      if (!opNavState) return;
+      opNavState.speedKmh = Number(kmh) || 40;
+    }
+
+    function opNavRestart() {
+      if (!opNavState) return;
+      opNavState.traveledM = 0;
+      opNavState.paused = false;
+      opNavState.finished = false;
+      opNavState.lastNow = performance.now();
+      const b = document.getElementById('op-nav-pause-btn');
+      if (b) b.textContent = 'Pause';
+    }
+
+    function opNavStop() {
+      if (opNavAnimId) cancelAnimationFrame(opNavAnimId);
+      opNavAnimId = null;
+      if (opNavState) { opNavState.paused = true; opNavState.finished = true; }
+    }
+
+    function startOperatorNavAnimation(coords, totalKm, isLeg2, roadNames = [], destLabel = 'Destination') {
+      if (opNavAnimId) cancelAnimationFrame(opNavAnimId);
+      if (!coords || coords.length < 2 || !opMap) return;
+
+      // Normalize to [lat, lon]
+      const pts = coords.map(c => c[0] > 30 ? [c[1], c[0]] : [c[0], c[1]]);
+      const cumDist = [0];
+      for (let i = 1; i < pts.length; i++) cumDist.push(cumDist[i - 1] + _haversineM(pts[i - 1], pts[i]));
+      const totalM = Math.max(50, cumDist[cumDist.length - 1]);
+
+      // Extract real geometric turn maneuvers from consecutive segment bearings
+      const streets = (roadNames || []).filter(Boolean);
+      const maneuvers = [];
+      for (let i = 1; i < pts.length - 1; i++) {
+        const b1 = _segBearing(pts[i - 1], pts[i]);
+        const b2 = _segBearing(pts[i], pts[i + 1]);
+        let diff = ((b2 - b1 + 540) % 360) - 180;
+        let type = null;
+        if (Math.abs(diff) > 135) type = 'U-TURN';
+        else if (diff <= -35) type = 'LEFT';
+        else if (diff >= 35) type = 'RIGHT';
+        if (type && (!maneuvers.length || cumDist[i] - maneuvers[maneuvers.length - 1].distM > 45)) {
+          const road = streets[Math.min(streets.length - 1, Math.floor((i / pts.length) * streets.length))] || 'Hubballi Road';
+          maneuvers.push({ distM: cumDist[i], type, road });
+        }
+      }
+      maneuvers.push({ distM: totalM, type: 'ARRIVAL', road: destLabel });
+
+      // Clear previous dynamic route layers & inject Google Navigation HUD
+      const outerC = isLeg2 ? '#047857' : '#1D4ED8';
+      const innerC = isLeg2 ? '#10B981' : '#3B82F6';
+      const trailLine = L.polyline([pts[0]], { color: '#94A3B8', weight: 6, opacity: 0.65, lineCap: 'round' }).addTo(opLayer);
+      const aheadCasing = L.polyline(pts, { color: outerC, weight: 10, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }).addTo(opLayer);
+      const aheadLine = L.polyline(pts, { color: innerC, weight: 6, opacity: 1.0, lineCap: 'round', lineJoin: 'round' }).addTo(opLayer);
+      const initBearing = _segBearing(pts[0], pts[1]);
+      const navMarker = L.marker(pts[0], { icon: ambulanceIcon(isLeg2 ? 'EN_ROUTE_TO_HOSPITAL' : 'EN_ROUTE_TO_EMERGENCY', initBearing), zIndexOffset: 1000 }).addTo(opLayer);
+
+      const opMapEl = document.getElementById('op-map');
+      if (opMapEl) {
+        opMapEl.style.position = 'relative';
+        opMapEl.querySelectorAll('.gnav-hud').forEach(el => el.remove());
+        const topHud = document.createElement('div');
+        topHud.className = 'gnav-hud';
+        topHud.style.cssText = 'position:absolute;top:12px;left:54px;right:12px;z-index:1000;background:#0F766E;color:#FFFFFF;border-radius:14px;padding:10px 14px;box-shadow:0 6px 20px rgba(0,0,0,0.28);display:flex;align-items:center;gap:12px;pointer-events:none;transition:all 0.2s;';
+        topHud.innerHTML = `
+          <div id="gnav-arrow" style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">${_turnArrowSvg('STRAIGHT')}</div>
+          <div style="min-width:0;flex:1;">
+            <div id="gnav-dist" style="font-size:12px;font-weight:700;color:#B8F432;letter-spacing:0.02em;">Starting navigation...</div>
+            <div id="gnav-instr" style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Continue on ${streets[0] || 'Hubballi Arterial Road'}</div>
+            <div style="font-size:11px;opacity:0.85;">Toward ${destLabel}</div>
+          </div>
+        `;
+        const botHud = document.createElement('div');
+        botHud.className = 'gnav-hud';
+        botHud.style.cssText = 'position:absolute;bottom:14px;left:14px;right:14px;z-index:1000;background:#FFFFFF;border:1.5px solid #E2E8F0;border-radius:14px;padding:10px 14px;box-shadow:0 6px 20px rgba(15,23,42,0.18);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;';
+        botHud.innerHTML = `
+          <div>
+            <div id="gnav-eta" style="font-size:18px;font-weight:800;color:#059669;line-height:1.1;">—</div>
+            <div id="gnav-sub" style="font-size:11px;color:#475569;margin-top:2px;">${isLeg2 ? 'Leg 2 · Hospital Transport' : 'Leg 1 · Emergency Response'}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <select onchange="opNavSetSpeed(this.value)" style="padding:4px 8px;border-radius:8px;border:1px solid #CBD5E1;font-size:12px;font-weight:600;background:#F8FAFC;color:#0F172A;">
+              <option value="20">20 km/h</option>
+              <option value="40" selected>40 km/h</option>
+              <option value="60">60 km/h</option>
+              <option value="80">80 km/h</option>
+            </select>
+            <button id="op-nav-pause-btn" onclick="opNavTogglePause()" style="padding:5px 10px;border-radius:8px;background:#1C1D21;color:#B8F432;font-size:12px;font-weight:600;border:none;cursor:pointer;">Pause</button>
+            <button onclick="opNavRestart()" style="padding:5px 10px;border-radius:8px;background:#F1F5F9;color:#0F172A;font-size:12px;font-weight:600;border:1px solid #CBD5E1;cursor:pointer;">Restart</button>
+          </div>
+        `;
+        opMapEl.appendChild(topHud);
+        opMapEl.appendChild(botHud);
+      }
+
+      opNavState = { traveledM: 0, speedKmh: 40, paused: false, finished: false, lastNow: performance.now(), smoothBearing: initBearing };
+      opMap.setView(pts[0], 16, { animate: true });
+
+      function step(now) {
+        if (!opNavState) return;
+        const dt = Math.min(0.1, (now - opNavState.lastNow) / 1000);
+        opNavState.lastNow = now;
+
+        if (!opNavState.paused && !opNavState.finished) {
+          // Advance along real road distance at selected km/h (with 1.8x demo responsiveness)
+          opNavState.traveledM = Math.min(totalM, opNavState.traveledM + (opNavState.speedKmh / 3.6) * dt * 1.8);
+        }
+
+        // Locate current segment
+        let segIdx = 0;
+        while (segIdx < cumDist.length - 2 && cumDist[segIdx + 1] < opNavState.traveledM) segIdx++;
+        const segLen = Math.max(0.01, cumDist[segIdx + 1] - cumDist[segIdx]);
+        const frac = Math.max(0, Math.min(1, (opNavState.traveledM - cumDist[segIdx]) / segLen));
+        const [lat1, lon1] = pts[segIdx];
+        const [lat2, lon2] = pts[segIdx + 1];
+        const lat = lat1 + (lat2 - lat1) * frac;
+        const lon = lon1 + (lon2 - lon1) * frac;
+
+        // Smooth heading interpolation
+        const targetB = _segBearing(pts[segIdx], pts[segIdx + 1]);
+        let bDiff = ((targetB - opNavState.smoothBearing + 540) % 360) - 180;
+        opNavState.smoothBearing = (opNavState.smoothBearing + bDiff * 0.18 + 360) % 360;
+
+        navMarker.setLatLng([lat, lon]);
+        navMarker.setIcon(ambulanceIcon(isLeg2 ? 'EN_ROUTE_TO_HOSPITAL' : 'EN_ROUTE_TO_EMERGENCY', Math.round(opNavState.smoothBearing)));
+
+        // Dynamic completed vs remaining route polylines
+        trailLine.setLatLngs([...pts.slice(0, segIdx + 1), [lat, lon]]);
+        const remPts = [[lat, lon], ...pts.slice(segIdx + 1)];
+        aheadCasing.setLatLngs(remPts);
+        aheadLine.setLatLngs(remPts);
+
+        // Google Maps look-ahead camera: keep ambulance in lower-middle showing road ahead
+        const rad = opNavState.smoothBearing * Math.PI / 180;
+        const lookLat = lat + Math.cos(rad) * 0.00055;
+        const lookLon = lon + Math.sin(rad) * 0.00055;
+        opMap.setView([lookLat, lookLon], opMap.getZoom() < 15 ? 16 : opMap.getZoom(), { animate: false });
+
+        // Update Top Turn-by-Turn HUD
+        const nextM = maneuvers.find(m => m.distM > opNavState.traveledM + 8) || maneuvers[maneuvers.length - 1];
+        const distToTurn = Math.max(0, Math.round(nextM.distM - opNavState.traveledM));
+        const arrowEl = document.getElementById('gnav-arrow');
+        const distEl = document.getElementById('gnav-dist');
+        const instrEl = document.getElementById('gnav-instr');
+        if (arrowEl && distEl && instrEl) {
+          if (opNavState.traveledM >= totalM - 2) {
+            arrowEl.innerHTML = _turnArrowSvg('ARRIVAL');
+            distEl.textContent = 'ARRIVED';
+            instrEl.textContent = `You have arrived at ${destLabel}`;
+            opNavState.finished = true;
+          } else {
+            arrowEl.innerHTML = _turnArrowSvg(distToTurn > 150 ? 'STRAIGHT' : nextM.type);
+            distEl.textContent = distToTurn >= 1000 ? `In ${(distToTurn / 1000).toFixed(1)} km` : `In ${distToTurn} m`;
+            if (nextM.type === 'ARRIVAL') {
+              instrEl.textContent = distToTurn < 60 ? `Arriving at ${destLabel}` : `Continue straight toward ${destLabel}`;
+            } else if (distToTurn > 150) {
+              instrEl.textContent = `Continue straight on ${nextM.road}`;
+            } else if (distToTurn > 35) {
+              instrEl.textContent = `Prepare to turn ${nextM.type.toLowerCase()} onto ${nextM.road}`;
+            } else {
+              instrEl.textContent = `Turn ${nextM.type.toLowerCase()} onto ${nextM.road}`;
+            }
+          }
+        }
+
+        // Update Bottom ETA Bar
+        const remM = Math.max(0, totalM - opNavState.traveledM);
+        const remSec = Math.ceil(remM / Math.max(1, opNavState.speedKmh / 3.6));
+        const etaStr = remSec >= 60 ? `${Math.ceil(remSec / 60)} min` : `${remSec} sec`;
+        const distStr = remM >= 1000 ? `${(remM / 1000).toFixed(2)} km` : `${Math.round(remM)} m`;
+        const etaEl = document.getElementById('gnav-eta');
+        if (etaEl) etaEl.innerHTML = opNavState.finished ? 'Arrived' : `${etaStr} <span style="font-size:13px;font-weight:600;color:#64748B;">(${distStr})</span>`;
+        const topEtaBadge = document.getElementById('op-map-eta');
+        if (topEtaBadge) topEtaBadge.textContent = opNavState.finished ? 'ARRIVED' : `${etaStr} · ${distStr} · ${opNavState.speedKmh} km/h`;
+
+        opNavAnimId = requestAnimationFrame(step);
+      }
+      opNavAnimId = requestAnimationFrame(step);
+    }
+
+    async function loadOperatorPortalData() {
+      const [data, hist] = await Promise.all([apiFetch('/api/v1/operator/my-unit'), apiFetch('/api/v1/operator/history')]);
+      const u = data.unit;
+      const a = data.active_assignment;
+
+      document.getElementById('op-unit-card').innerHTML = `
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-caption font-mono text-[#B8F432]">ASSIGNED VEHICLE</div>
+            <h3 class="mt-0.5 text-white">${u.call_sign} (${u.vehicle_type})</h3>
+            <div class="text-white/60 mt-1 font-mono text-caption">${u.registration_number || ''} · ${u.latitude.toFixed(5)}, ${u.longitude.toFixed(5)}</div>
+          </div>
+          <span class="px-3 py-1 rounded-full bg-[#B8F432] text-[#1C1D21] font-mono font-bold">${u.status}</span>
+        </div>
+      `;
+
+      // Action buttons for the exact two-leg crew workflow
+      let actionBtn = '';
+      if (a) {
+        const actionMap = {
+          ASSIGNED: ['ACCEPT_AND_START', 'Accept Assignment & Start Leg 1 (To Emergency)'],
+          EN_ROUTE_TO_EMERGENCY: ['ARRIVED_AT_EMERGENCY', 'Reached Emergency Location'],
+          ARRIVED_AT_EMERGENCY: ['PATIENT_PICKED_UP', 'Confirm Patient Pickup (Calculate Hospital Route)'],
+          PATIENT_PICKED_UP: ['START_HOSPITAL_JOURNEY', 'Start Leg 2 Journey (To Hospital)'],
+          EN_ROUTE_TO_HOSPITAL: ['ARRIVED_AT_HOSPITAL', 'Arrived at Hospital'],
+          ARRIVED_AT_HOSPITAL: ['SUBMIT_COMPLETION', 'Confirm Handover & Request Dispatcher Verification'],
+        };
+        const nextAct = actionMap[a.status];
+        if (nextAct) {
+          actionBtn = `<button onclick="operatorCrewAction('${a.id}','${nextAct[0]}')" class="w-full py-3 rounded-xl bg-[#1C1D21] text-[#B8F432] mt-2">${nextAct[1]}</button>`;
+        } else if (a.status === 'PENDING_VERIFICATION') {
+          actionBtn = `<div class="p-3 rounded-xl bg-[#B8F432]/20 text-small font-semibold">Handover submitted — awaiting Dispatcher verification to release vehicle.</div>`;
+        }
+      }
+
+      document.getElementById('op-assignment-card').innerHTML = a ? `
+        <div class="flex items-center justify-between"><h4>Active Mission (${a.active_leg || 'LEG_1'})</h4><span class="px-2 py-0.5 rounded bg-[#EF4444] text-white font-mono text-caption">${a.priority}</span></div>
+        <div><b>Emergency:</b> ${a.incident_type} · ${a.description || 'No extra notes'}</div>
+        <div><b>Status:</b> ${a.status} · <b>ETA:</b> ${a.eta_seconds || 0}s</div>
+        <div><b>Destination Hospital:</b> ${a.hospital_name || 'Pending'}</div>
+        ${actionBtn}
+      ` : '<div class="text-[#6E737D] text-center py-4">No active assignment. Unit is standing by.</div>';
+
+      // Render Operator Live QGIS Navigation Map
+      if (!opMap) {
+        opMap = L.map('op-map', { maxBounds: METRO_BOUNDS.pad(0.1) }).setView([u.latitude, u.longitude], 13);
+        qgisTileLayer().addTo(opMap);
+        addLocalityLabels(opMap);
+        opLayer.addTo(opMap);
+      }
+      setTimeout(() => opMap.invalidateSize(), 80);
+      opLayer.clearLayers();
+      L.marker([u.latitude, u.longitude], { icon: ambulanceIcon(u.status) }).bindPopup(`<b>${u.call_sign}</b> (Your Unit)`).addTo(opLayer);
+
+      if (a) {
+        L.marker([a.latitude, a.longitude], { icon: emergencyIcon(a.priority) }).bindPopup(`<b>Emergency Pickup</b><br>${a.incident_type}`).addTo(opLayer);
+        if (a.hosp_lat && a.hosp_lon) {
+          L.marker([a.hosp_lat, a.hosp_lon], { icon: hospitalIcon(1) }).bindPopup(`<b>Destination Hospital</b><br>${a.hospital_name}`).addTo(opLayer);
+        }
+        if (a.active_route_json && a.active_route_json.coordinates && a.active_route_json.coordinates.length > 1) {
+          const isLeg2 = a.active_leg === 'LEG_2';
+          const coords = a.active_route_json.coordinates;
+          const totalKm = a.active_route_json.total_distance_km || 0;
+          const etaMin = Math.max(1, Math.round((a.eta_seconds || 60) / 60));
+          const streets = (a.active_route_json.road_names || []).filter(Boolean);
+          const nextRoad = streets[0] || 'Hubballi Arterial Road';
+          const destLabel = isLeg2 ? (a.hospital_name || 'Assigned Hospital') : (a.incident_type || 'Emergency Scene');
+          document.getElementById('op-map-title').textContent = isLeg2 ? `LEG 2: Google-Style Navigation to ${destLabel}` : `LEG 1: Google-Style Navigation to Emergency`;
+
+          // Inject Google Navigation Turn-by-Turn Top Banner & Bottom ETA HUD inside #op-map
+          const opMapEl = document.getElementById('op-map');
+          if (opMapEl) {
+            opMapEl.style.position = 'relative';
+            opMapEl.querySelectorAll('.gnav-hud').forEach(el => el.remove());
+            const topHud = document.createElement('div');
+            topHud.className = 'gnav-hud';
+            topHud.style.cssText = 'position:absolute;top:12px;left:54px;right:12px;z-index:1000;background:#0F766E;color:#FFFFFF;border-radius:14px;padding:10px 14px;box-shadow:0 6px 20px rgba(0,0,0,0.28);display:flex;align-items:center;gap:12px;pointer-events:none;';
+            topHud.innerHTML = `
+              <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.16);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+              </div>
+              <div style="min-width:0;flex:1;">
+                <div style="font-size:11px;opacity:0.85;font-weight:600;letter-spacing:0.03em;">CONTINUE ON</div>
+                <div style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${nextRoad}</div>
+                <div style="font-size:11px;opacity:0.85;">Toward ${destLabel}</div>
+              </div>
+            `;
+            const botHud = document.createElement('div');
+            botHud.className = 'gnav-hud';
+            botHud.style.cssText = 'position:absolute;bottom:14px;left:14px;right:14px;z-index:1000;background:#FFFFFF;border:1.5px solid #E2E8F0;border-radius:14px;padding:10px 16px;box-shadow:0 6px 20px rgba(15,23,42,0.18);display:flex;align-items:center;justify-content:space-between;pointer-events:none;';
+            botHud.innerHTML = `
+              <div>
+                <div style="font-size:18px;font-weight:800;color:#059669;line-height:1.1;">${etaMin} min <span style="font-size:13px;font-weight:600;color:#64748B;">(${totalKm} km)</span></div>
+                <div style="font-size:11px;color:#475569;margin-top:2px;">Fastest constraint-checked route · ${isLeg2 ? 'Leg 2 (Hospital)' : 'Leg 1 (Emergency)'}</div>
+              </div>
+              <span style="padding:5px 10px;border-radius:999px;background:#EFF6FF;color:#1D4ED8;font-size:11px;font-weight:700;border:1px solid #BFDBFE;">LIVE NAV</span>
+            `;
+            opMapEl.appendChild(topHud);
+            opMapEl.appendChild(botHud);
+          }
+
+          startOperatorNavAnimation(coords, totalKm, isLeg2, streets, destLabel);
+        } else {
+          opMap.setView([a.latitude, a.longitude], 14);
+        }
+      } else {
+        opMap.setView([u.latitude, u.longitude], 13);
+        document.getElementById('op-map-eta').textContent = 'Standby';
+      }
+
+      document.getElementById('op-history-list').innerHTML = hist.length ? hist.map(h => `
+        <div class="py-2.5 flex justify-between"><div><b>${h.incident_type}</b><div class="text-caption text-[#6E737D]">Hospital: ${h.hospital_name || '—'}</div></div><span class="font-mono text-caption">${h.status}</span></div>
+      `).join('') : '<div class="py-4 text-center text-[#6E737D]">No previous assignments.</div>';
+    }
+
+    async function operatorCrewAction(incId, action) {
+      try {
+        await apiFetch(`/api/v1/workflow/crew-action/${incId}`, { method: 'POST', body: JSON.stringify({ action }) });
+        loadOperatorPortalData();
+      } catch (e) { alert(e.message); }
+    }
+
+    function operatorSendGPS() {
+      if (!navigator.geolocation) return alert('GPS unavailable');
+      navigator.geolocation.getCurrentPosition(async p => {
+        await apiFetch('/api/v1/operator/location', { method: 'POST', body: JSON.stringify({ latitude: p.coords.latitude, longitude: p.coords.longitude, is_simulated: false }) });
+        document.getElementById('op-loc-msg').textContent = `Real GPS sent: ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;
+        loadOperatorPortalData();
+      }, e => alert(e.message));
+    }
+
+    // =========================================================================
+    // LIVE OPERATIONS SIMULATOR + WEBSOCKET REAL-TIME MAP SYNC
+    // =========================================================================
+    let liveSimRunning = false;
+    let liveSimPaused = false;
+    let liveWS = null;
+    let liveWsRefreshTimer = null;
+    const liveSimRouteLines = {};
+
+    async function syncLiveSimButton() {
+      const bar = document.getElementById('sim-control-bar');
+      const btn = document.getElementById('btn-live-sim');
+      const pauseBtn = document.getElementById('btn-sim-pause');
+      const speedSel = document.getElementById('sim-speed-select');
+      if (!bar || !btn) return;
+      if (!currentUser || currentUser.role !== 'DISPATCHER') {
+        bar.classList.add('hidden');
+        return;
+      }
+      bar.classList.remove('hidden');
+      try {
+        const st = await apiFetch('/api/v1/simulation/status');
+        liveSimRunning = !!st.running;
+        liveSimPaused = !!st.paused;
+        if (speedSel && st.speed_multiplier) speedSel.value = String(Math.round(st.speed_multiplier));
+        const dot = document.getElementById('live-sim-dot');
+        const lbl = document.getElementById('live-sim-label');
+        if (liveSimRunning) {
+          btn.className = 'px-2.5 py-1.5 rounded-lg bg-[#1C1D21] text-[#B8F432] font-semibold transition flex items-center gap-1.5';
+          dot.className = liveSimPaused ? 'w-2 h-2 rounded-full bg-[#F59E0B]' : 'w-2 h-2 rounded-full bg-[#B8F432] animate-pulse';
+          lbl.textContent = liveSimPaused
+            ? `Auto-Sim: PAUSED (${st.active_missions} active · ${st.completed_count} done)`
+            : `Auto-Sim: LIVE (${st.active_missions} active · ${st.completed_count} done)`;
+          if (pauseBtn) {
+            pauseBtn.classList.remove('hidden');
+            pauseBtn.textContent = liveSimPaused ? 'Resume' : 'Pause';
+          }
+        } else {
+          btn.className = 'px-2.5 py-1.5 rounded-lg border border-[#E6E8EC] bg-white hover:bg-[#1C1D21] hover:text-[#B8F432] font-semibold transition flex items-center gap-1.5';
+          dot.className = 'w-2 h-2 rounded-full bg-[#6E737D]';
+          lbl.textContent = 'Auto-Sim: OFF';
+          if (pauseBtn) pauseBtn.classList.add('hidden');
+        }
+      } catch (e) {}
+    }
+
+    async function toggleLiveSimulation() {
+      try {
+        if (liveSimRunning) {
+          await apiFetch('/api/v1/simulation/stop', { method: 'POST' });
+        } else {
+          const spd = Number(document.getElementById('sim-speed-select')?.value || 2);
+          await apiFetch('/api/v1/simulation/start', { method: 'POST', body: JSON.stringify({ max_concurrent: 4, spawn_interval_s: 6, speed_multiplier: spd }) });
+        }
+        await syncLiveSimButton();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function togglePauseSimulation() {
+      try {
+        await apiFetch(liveSimPaused ? '/api/v1/simulation/resume' : '/api/v1/simulation/pause', { method: 'POST' });
+        await syncLiveSimButton();
+      } catch (e) { alert(e.message); }
+    }
+
+    async function changeSimSpeed(val) {
+      try {
+        await apiFetch('/api/v1/simulation/config', { method: 'POST', body: JSON.stringify({ speed_multiplier: Number(val) }) });
+        await syncLiveSimButton();
+      } catch (e) {}
+    }
+
+    async function resetDemoScenario() {
+      if (!confirm('Reset active simulated missions and return all ambulances to AVAILABLE? Historical completed records will be preserved.')) return;
+      try {
+        await apiFetch('/api/v1/simulation/reset', { method: 'POST' });
+        Object.keys(liveSimRouteLines).forEach(k => clearLiveSimRoute(k.split('_')[0]));
+        Object.keys(liveMovingAmbMarkers).forEach(k => {
+          [dashMap, fullMap].forEach(m => { if (m && liveMovingAmbMarkers[k]) m.removeLayer(liveMovingAmbMarkers[k]); });
+          delete liveMovingAmbMarkers[k];
+        });
+        await syncLiveSimButton();
+        if (typeof loadAllDispatcherData === 'function') await loadAllDispatcherData();
+      } catch (e) { alert(e.message); }
+    }
+
+    const liveMovingAmbMarkers = {};
+    const liveAmbAnimState = {};
+
+    function computeBearingDeg(lat1, lon1, lat2, lon2) {
+      const toRad = d => d * Math.PI / 180;
+      const dLon = toRad(lon2 - lon1);
+      const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+      const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) - Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+      return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
+    }
+
+    const ROUTE_PALETTE = [
+      { inner: '#3B82F6', outer: '#1D4ED8' }, // Royal Blue
+      { inner: '#10B981', outer: '#047857' }, // Emerald
+      { inner: '#8B5CF6', outer: '#5B21B6' }, // Violet
+      { inner: '#F43F5E', outer: '#BE123C' }, // Rose
+      { inner: '#F59E0B', outer: '#B45309' }, // Amber
+      { inner: '#06B6D4', outer: '#0E7490' }, // Cyan
+      { inner: '#D946EF', outer: '#A21CAF' }, // Fuchsia
+      { inner: '#6366F1', outer: '#3730A3' }, // Indigo
+    ];
+    const incColorMap = {};
+    let incColorSeq = 0;
+    function getIncidentPalette(incId) {
+      if (!incId) return ROUTE_PALETTE[0];
+      if (!incColorMap[incId]) {
+        incColorMap[incId] = ROUTE_PALETTE[incColorSeq % ROUTE_PALETTE.length];
+        incColorSeq++;
+      }
+      return incColorMap[incId];
+    }
+
+    function navArrowIcon(leg, deg, status, incId) {
+      const pal = getIncidentPalette(incId);
+      const ring = pal.outer;
+      return L.divIcon({
+        className: '',
+        html: `<div style="width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,0.92);border:2.5px solid ${ring};display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(0,0,0,0.35);">
+          <div style="transform:rotate(${deg.toFixed(1)}deg);display:flex;align-items:center;justify-content:center;">
+            <svg width="20" height="28" viewBox="0 0 20 28" fill="none">
+              <rect x="3" y="2" width="14" height="24" rx="3.5" fill="#FFFFFF" stroke="#1C1D21" stroke-width="1.6"/>
+              <rect x="4.5" y="4" width="11" height="4.5" rx="1.2" fill="#38BDF8" stroke="#1C1D21" stroke-width="0.8"/>
+              <rect x="5" y="9.5" width="4.5" height="2" rx="0.6" fill="#EF4444"/>
+              <rect x="10.5" y="9.5" width="4.5" height="2" rx="0.6" fill="#2563EB"/>
+              <path d="M10 14.5V21.5M6.5 18H13.5" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+      });
+    }
+
+    function drawLiveSimRoute(incId, coords, leg, etaS, distM) {
+      if (!coords || !coords.length) return;
+      const latlngs = coords.map(c => c[0] > 30 ? [c[1], c[0]] : [c[0], c[1]]);
+      const pal = getIncidentPalette(incId);
+      const outerColor = pal.outer;
+      const innerColor = pal.inner;
+      const mid = latlngs[Math.floor(latlngs.length / 2)];
+      const endPt = latlngs[latlngs.length - 1];
+      const etaTxt = etaS ? `${Math.max(1, Math.round(etaS / 60))} min` : (leg === 'LEG_2' ? 'To Hospital' : 'To Scene');
+      const distTxt = distM ? `${(distM / 1000).toFixed(1)} km` : '';
+
+      [dashMap, fullMap].forEach((m, idx) => {
+        if (!m) return;
+        const key = `${incId}_${idx}`;
+        if (liveSimRouteLines[key]) m.removeLayer(liveSimRouteLines[key]);
+        const dash = leg === 'LEG_2' ? '10,7' : null;
+        const casing = L.polyline(latlngs, { color: outerColor, weight: 8, opacity: 0.9, lineCap: 'round', lineJoin: 'round', dashArray: dash });
+        const inner = L.polyline(latlngs, { color: innerColor, weight: 4.5, opacity: 1.0, lineCap: 'round', lineJoin: 'round', dashArray: dash });
+        const etaPill = L.marker(mid, {
+          interactive: false,
+          zIndexOffset: 700,
+          icon: L.divIcon({
+            className: '',
+            html: `<div style="background:#FFFFFF;border:2px solid ${outerColor};border-radius:8px;padding:3px 8px;box-shadow:0 2px 8px rgba(0,0,0,0.2);white-space:nowrap;font-family:Inter,sans-serif;">
+              <div style="font-size:11px;font-weight:700;color:${outerColor};line-height:1.2;">${etaTxt}</div>
+              ${distTxt ? `<div style="font-size:10px;color:#6E737D;line-height:1.2;">${distTxt}</div>` : ''}
+            </div>`,
+            iconSize: [72, 30],
+            iconAnchor: [36, 15],
+          }),
+        });
+        const destPin = L.circleMarker(endPt, {
+          radius: 7,
+          color: '#FFFFFF',
+          weight: 2.5,
+          fillColor: outerColor,
+          fillOpacity: 1,
+        });
+        liveSimRouteLines[key] = L.layerGroup([casing, inner, destPin, etaPill]).addTo(m);
+      });
+    }
+
+    function clearLiveSimRoute(incId) {
+      [dashMap, fullMap].forEach((m, idx) => {
+        const key = `${incId}_${idx}`;
+        if (m && liveSimRouteLines[key]) { m.removeLayer(liveSimRouteLines[key]); delete liveSimRouteLines[key]; }
+      });
+    }
+
+    function updateLiveAmbulanceMarker(ambId, lat, lon, leg, etaS, stepMs, callSign, status, progressPct, remM, incId) {
+      if (!ambId || lat == null || lon == null) return;
+      const prev = liveAmbAnimState[ambId];
+      const startLat = prev ? prev.curLat : lat;
+      const startLon = prev ? prev.curLon : lon;
+      const deg = (Math.abs(lat - startLat) > 1e-6 || Math.abs(lon - startLon) > 1e-6)
+        ? computeBearingDeg(startLat, startLon, lat, lon)
+        : (prev ? prev.deg : 0);
+
+      if (prev && prev.raf) cancelAnimationFrame(prev.raf);
+      const dur = Math.max(200, Number(stepMs || 780));
+      const state = { startLat, startLon, targetLat: lat, targetLon: lon, curLat: startLat, curLon: startLon, deg, leg, t0: performance.now(), dur, raf: null };
+      liveAmbAnimState[ambId] = state;
+
+      const icon = navArrowIcon(leg, deg, status, incId);
+      const label = `${callSign || 'Ambulance'} · ${leg === 'LEG_2' ? 'To Hospital' : 'To Emergency'} · ETA ${etaS || 0}s${progressPct ? ` (${progressPct}%)` : ''}`;
+      [dashMap, fullMap].forEach((m, idx) => {
+        if (!m) return;
+        const key = `${ambId}_${idx}`;
+        if (!liveMovingAmbMarkers[key]) {
+          liveMovingAmbMarkers[key] = L.marker([startLat, startLon], { icon, zIndexOffset: 950 })
+            .bindTooltip(label, { direction: 'top' })
+            .addTo(m);
+        } else {
+          liveMovingAmbMarkers[key].setIcon(icon);
+          liveMovingAmbMarkers[key].setTooltipContent(label);
+        }
+      });
+
+      function step(now) {
+        const p = Math.min(1, (now - state.t0) / state.dur);
+        state.curLat = state.startLat + (state.targetLat - state.startLat) * p;
+        state.curLon = state.startLon + (state.targetLon - state.startLon) * p;
+        [dashMap, fullMap].forEach((m, idx) => {
+          const mk = liveMovingAmbMarkers[`${ambId}_${idx}`];
+          if (m && mk) mk.setLatLng([state.curLat, state.curLon]);
+        });
+        if (p < 1) state.raf = requestAnimationFrame(step);
+      }
+      state.raf = requestAnimationFrame(step);
+    }
+
+    function syncActiveRoutesFromCache() {
+      if (typeof cachedIncidents === 'undefined' || !cachedIncidents) return;
+      const activeIds = new Set();
+      cachedIncidents.forEach(inc => {
+        if (!['COMPLETED', 'CANCELLED'].includes(inc.status) && inc.active_route_json && inc.active_route_json.coordinates) {
+          activeIds.add(inc.id);
+          drawLiveSimRoute(inc.id, inc.active_route_json.coordinates, inc.active_leg || 'LEG_1', inc.eta_seconds, inc.remaining_distance_m);
+        }
+      });
+      Object.keys(liveSimRouteLines).forEach(k => {
+        const incId = k.split('_')[0];
+        if (!activeIds.has(incId)) clearLiveSimRoute(incId);
+      });
+    }
+
+    function connectLiveWS() {
+      if (liveWS && liveWS.readyState <= 1) return;
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      liveWS = new WebSocket(`${proto}//${location.host}/ws`);
+      liveWS.onmessage = (ev) => {
+        try {
+          const msg = JSON.parse(ev.data);
+          if (msg.type === 'AMBULANCE_LOCATION' && msg.ambulance_id) {
+            updateLiveAmbulanceMarker(msg.ambulance_id, msg.lat, msg.lon, msg.leg || 'LEG_1', msg.eta_seconds, msg.step_ms, msg.ambulance_callsign, msg.status, msg.progress_pct, msg.remaining_distance_m, msg.incident_id);
+            if (currentUser && currentUser.role === 'CITIZEN' && window._citTrackedIncId && msg.incident_id === window._citTrackedIncId && citMap) {
+              if (!window._citLiveAmbMarker) {
+                window._citLiveAmbMarker = L.marker([msg.lat, msg.lon], { icon: navArrowIcon(msg.leg || 'LEG_1', 0, msg.status), zIndexOffset: 950 }).addTo(citMap);
+              } else {
+                window._citLiveAmbMarker.setLatLng([msg.lat, msg.lon]);
+              }
+            }
+            return;
+          }
+          if (currentUser && currentUser.role === 'CITIZEN' && window._citTrackedIncId && msg.incident_id === window._citTrackedIncId) {
+            if (typeof trackCitizenIncident === 'function') trackCitizenIncident(window._citTrackedIncId);
+          }
+          if (currentUser && currentUser.role === 'AMBULANCE_OPERATOR' && (msg.type === 'DISPATCH_ASSIGNED' || msg.type === 'CREW_STATUS_UPDATE' || msg.type === 'INCIDENT_COMPLETED')) {
+            if (!msg.ambulance_id || !currentUser.assigned_entity_id || msg.ambulance_id === currentUser.assigned_entity_id) {
+              if (typeof loadOperatorPortalData === 'function') loadOperatorPortalData();
+            }
+          }
+          if (msg.route_coords && msg.incident_id) {
+            drawLiveSimRoute(msg.incident_id, msg.route_coords, msg.leg || 'LEG_1');
+          }
+          if (msg.type === 'INCIDENT_COMPLETED' && msg.incident_id) {
+            clearLiveSimRoute(msg.incident_id);
+            [dashMap, fullMap].forEach((m, idx) => {
+              const key = `${msg.ambulance_id}_${idx}`;
+              if (m && liveMovingAmbMarkers[key]) { m.removeLayer(liveMovingAmbMarkers[key]); delete liveMovingAmbMarkers[key]; }
+            });
+          }
+          if (currentUser && currentUser.role === 'DISPATCHER') {
+            if (liveWsRefreshTimer) clearTimeout(liveWsRefreshTimer);
+            liveWsRefreshTimer = setTimeout(async () => {
+              if (typeof loadAllDispatcherData === 'function') {
+                await loadAllDispatcherData();
+                syncActiveRoutesFromCache();
+              }
+              syncLiveSimButton();
+            }, 600);
+          }
+        } catch (e) {}
+      };
+      liveWS.onclose = () => setTimeout(connectLiveWS, 3000);
+    }
+
+    function switchAuthTab(tab) {
+      const isUp = tab === 'signup';
+      document.getElementById('login-form').classList.toggle('hidden', isUp);
+      document.getElementById('register-form').classList.toggle('hidden', !isUp);
+      document.getElementById('tab-signin').className = isUp
+        ? 'flex-1 py-2 rounded-lg text-slate-600 text-xs font-semibold transition'
+        : 'flex-1 py-2 rounded-lg bg-[#1C1D21] text-[#B8F432] text-xs font-semibold transition';
+      document.getElementById('tab-signup').className = isUp
+        ? 'flex-1 py-2 rounded-lg bg-[#1C1D21] text-[#B8F432] text-xs font-semibold transition'
+        : 'flex-1 py-2 rounded-lg text-slate-600 text-xs font-semibold transition';
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const err = document.getElementById('reg-error');
+      err.classList.add('hidden');
+      try {
+        const res = await fetch('/api/v1/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('reg-name').value.trim(),
+            email: document.getElementById('reg-email').value.trim(),
+            password: document.getElementById('reg-password').value,
+            role: document.getElementById('reg-role').value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Registration failed');
+        authToken = data.access_token;
+        currentUser = data.user;
+        localStorage.setItem('iers_token', authToken);
+        localStorage.setItem('iers_user', JSON.stringify(currentUser));
+        enterPortal();
+      } catch (ex) {
+        err.textContent = ex.message;
+        err.classList.remove('hidden');
+      }
+    }
+
+    if (authToken && currentUser && ROLE_MENUS[currentUser.role]) {
+      enterPortal();
+      syncLiveSimButton();
+      connectLiveWS();
+    }
+    const _origEnterPortal = enterPortal;
+    enterPortal = function() {
+      _origEnterPortal();
+      syncLiveSimButton();
+      connectLiveWS();
+    };
+  </script>
+</body>
+</html>
